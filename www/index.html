@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07110d">
+<title>ScamRadar</title>
+<style>
+:root{color-scheme:dark;--bg:#07110d;--line:#20372b;--green:#83ffb0;--muted:#a4b6aa}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top,#163324,#07110d 48%);color:#f3fff7;font:16px system-ui,sans-serif}
+main{max-width:720px;margin:auto;padding:24px 16px 40px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border:1px solid #316c4b;border-radius:15px;display:grid;place-items:center;color:#83ffb0;font-size:28px}
+.eyebrow{font-size:11px;letter-spacing:2px;color:#83ffb0;font-weight:800}
+.brand h1{margin:2px 0;font-size:23px}
+.muted,.notice{color:#a4b6aa;font-size:13px;line-height:1.5}
+.hero{margin:32px 0 20px}
+.hero h2{font-size:31px;line-height:1.1;margin:8px 0}
+.panel{background:linear-gradient(145deg,#12251a,#0c1711);border:1px solid #20372b;border-radius:20px;padding:18px;margin:14px 0}
+.label{display:block;font-size:13px;margin-bottom:9px}
+input{width:100%;background:#07120c;color:white;border:1px solid #2c4937;border-radius:12px;padding:15px;font:inherit}
+button{border:0;border-radius:12px;padding:14px;font:700 15px system-ui;cursor:pointer}
+.primary{background:#83ffb0;color:#062012;width:100%;margin-top:12px}
+.secondary{background:#193323;color:#83ffb0;border:1px solid #326348;width:100%;margin-top:12px}
+.chip{display:inline-block;font-size:12px;border:1px solid #2c4535;border-radius:99px;padding:7px 10px;margin:10px 5px 0 0;color:#c4d5ca}
+.feature{padding:12px 0;border-bottom:1px solid #20352a}
+.feature:last-child{border:0}
+.feature strong{display:block}
+.feature span{font-size:12px;color:#a4b6aa}
+.result{display:none}
+.item{padding:12px 0;border-bottom:1px solid #20352a}
+.footer{text-align:center;color:#82988a;font-size:11px;padding:16px}
+</style>
+</head>
+<body>
+<main>
+<header class="brand">
+<div class="logo">⌁</div>
+<div><div class="eyebrow">CRYPTO SECURITY</div><h1>ScamRadar</h1><div class="muted">Проверяй. Анализируй. Защищайся.</div></div>
+</header>
+<section class="hero"><div class="eyebrow">ТВОЙ КРИПТО-ДЕТЕКТИВ</div><h2>Проверь проект,<br>прежде чем доверять ему.</h2><p class="muted">Ищи признаки риска и принимай решения осознанно.</p></section>
+<section class="panel">
+<label class="label" for="target">Адрес токена или ссылка на проект</label>
+<input id="target" placeholder="Вставь адрес или https://..." autocomplete="off">
+<div><span class="chip">Сайт</span><span class="chip">Токен</span><span class="chip">Кошелёк</span></div>
+<button class="primary" id="check">⌕ Проверить объект</button>
+<p class="notice">Демо-режим: внешние источники данных пока не подключены. Никогда не вводи seed-фразу или приватный ключ.</p>
+</section>
+<section class="panel result" id="result">
+<div class="eyebrow">ПРЕДВАРИТЕЛЬНЫЙ ОТЧЁТ</div><h3 id="name"></h3><p id="summary" class="notice"></p><div id="details"></div><button class="secondary" id="copy">Копировать отчёт</button>
+</section>
+<section class="panel"><h3>Что анализирует ScamRadar</h3>
+<div class="feature">◈ <strong>Сигналы сайта</strong><span>Прозрачность, подозрительные обещания и ссылки.</span></div>
+<div class="feature">⌘ <strong>Токен и контракт</strong><span>Подключение анализа блокчейна запланировано на следующий этап.</span></div>
+<div class="feature">◎ <strong>История проверок</strong><span>Недавние запросы сохраняются на устройстве.</span></div>
+</section>
+<section class="panel"><h3>Недавние проверки</h3><div id="history" class="notice">Пока проверок нет.</div><button class="secondary" id="clear">Очистить историю</button></section>
+<div class="footer">ScamRadar — инструмент предварительной оценки, не финансовая рекомендация.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let history=[];
+try{history=JSON.parse(localStorage.getItem('sr-history')||'[]')}catch(e){}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function draw(){ $('history').innerHTML=history.length?history.map(x=>'<div class="item"><strong>'+esc(x)+'</strong></div>').join(''):'Пока проверок нет.'}
+$('check').onclick=()=>{
+let v=$('target').value.trim();
+if(!v){$('target').focus();return}
+let url=/^https?:\/\//i.test(v);
+let address=/^(0x[a-f0-9]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})$/i.test(v);
+$('name').textContent=v;
+$('summary').textContent='Риск не определён: эта версия работает в демо-режиме и не обращается к блокчейну или базам угроз.';
+$('details').innerHTML='<div class="item"><strong>Формат</strong><p class="notice">'+(url?'Введена ссылка; домен не проверен.':address?'Похоже на адрес, но сеть и валидность не подтверждены.':'Формат автоматически не распознан.')+'</p></div><div class="item"><strong>Рекомендация</strong><p class="notice">Не подключай кошелёк и не подписывай транзакции, пока не проверишь проект независимыми источниками.</p></div>';
+$('result').style.display='block';
+history.unshift(v);history=[...new Set(history)].slice(0,8);
+try{localStorage.setItem('sr-history',JSON.stringify(history))}catch(e){}
+draw();$('result').scrollIntoView({behavior:'smooth'})
+};
+$('copy').onclick=async()=>{
+let t='ScamRadar — демо-отчёт\nОбъект: '+$('name').textContent+'\nРиск: не определён; внешние источники не подключены.';
+try{await navigator.clipboard.writeText(t);$('copy').textContent='Скопировано'}catch(e){$('copy').textContent='Копирование недоступно'}
+};
+$('clear').onclick=()=>{history=[];try{localStorage.removeItem('sr-history')}catch(e){}draw()};
+draw();
+</script>
+</body>
+</html>
