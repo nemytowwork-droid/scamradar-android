@@ -109,6 +109,75 @@ function saveHistory(v){
  draw();
 }
 function formatBtc(sats){
+async function checkAml(address, chain) {
+  try {
+    const response = await fetch(
+      'https://intelapi.publicaml.org/v1/enrich',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          addresses: [{
+            wallet_address: address,
+            chain: chain
+          }],
+          include: ['aml_score', 'category', 'counterparties'],
+          top_n: 5
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const data = await response.json();
+    const entity = (data.entities || [])[0];
+
+    if (!entity) {
+      addDetail(
+        'База риск-сигналов',
+        'Ответ получен, но запись для адреса не найдена.'
+      );
+      return;
+    }
+
+    addDetail(
+      'AML-оценка от внешнего сервиса',
+      entity.aml_score === undefined
+        ? 'Оценка не предоставлена.'
+        : String(entity.aml_score) + ' из 100'
+    );
+
+    if (entity.label) {
+      addDetail('Метка адреса', String(entity.label));
+    }
+
+    if (entity.category) {
+      addDetail('Категория', String(entity.category));
+    }
+
+    if (entity.sanctioned !== undefined) {
+      addDetail(
+        'Санкционная отметка',
+        entity.sanctioned ? 'Есть отметка' : 'Отметка не указана'
+      );
+    }
+
+    addDetail(
+      'Оговорка',
+      'Это сигнал внешнего сервиса, а не доказательство мошенничества или безопасности.'
+    );
+  } catch (error) {
+    addDetail(
+      'База риск-сигналов',
+      'Проверка не выполнена: ' +
+      (error.message || 'ошибка сети') +
+      '. Результат риска неизвестен.'
+    );
+  }
+}
+
  return (Number(sats)/100000000).toLocaleString('ru-RU',{maximumFractionDigits:8})+' BTC';
 }
 
