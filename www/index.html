@@ -71,7 +71,7 @@ button:disabled{opacity:.6;cursor:wait}
 <h3>Что проверяет ScamRadar</h3>
 <div class="feature">◈ <strong>Bitcoin</strong><span>Статистика адреса через Blockstream Esplora API.</span></div>
 <div class="feature">⌘ <strong>Ethereum</strong><span>Сведения об адресе через Blockscout.</span></div>
-<div class="feature">◎ <strong>Дополнительные сигналы</strong><span>Попытка запроса данных AML-сервиса. Доступность зависит от его API и сетевых ограничений.</span></div>
+<div class="feature">◎ <strong>Дополнительные сигналы</strong><span>Попытка запроса данных AML-сервиса. Метки и оценки зависят от стороннего поставщика.</span></div>
 <div class="feature">◉ <strong>История</strong><span>Последние проверки сохраняются на устройстве.</span></div>
 </section>
 
@@ -146,8 +146,30 @@ function formatBtc(sats) {
     .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
 }
 
-/* AML: показываем подробности ошибки сервиса */
+/* Поясняем категории, не делая выводов о виновности адреса. */
+function explainCategory(category) {
+  const key = String(category || '').toLowerCase();
+
+  const explanations = {
+    ransomware:
+      'Поставщик относит адрес к категории, связанной с ransomware — программами-вымогателями. Это сигнал для дополнительной проверки, а не самостоятельное доказательство незаконной деятельности.',
+    burn:
+      'Поставщик использует категорию burn, которая может обозначать адрес сжигания активов. Проверь контекст метки: сама по себе она не означает мошенничество.',
+    cex:
+      'Поставщик использует категорию cex, обычно связанную с централизованной криптобиржей или подобным сервисом. Метка сама по себе не доказывает, кому принадлежит адрес и безопасен ли он.'
+  };
+
+  return explanations[key] ||
+    'Это категория, присвоенная сторонним поставщиком. Её точный смысл зависит от методики и данных поставщика.';
+}
+
+/* AML: оценка поставщика отделена от собственной оценки ScamRadar. */
 async function checkAml(address, chain) {
+  addDetail(
+    'Собственная оценка ScamRadar',
+    'Пока не рассчитывается. Приложение не присваивает адресам собственный балл риска.'
+  );
+
   try {
     const response = await fetch(
       'https://aged-shadow-c96e.nemytowwork.workers.dev/',
@@ -213,7 +235,8 @@ async function checkAml(address, chain) {
       'AML-оценка внешнего сервиса',
       entity.aml_score === undefined || entity.aml_score === null
         ? 'Оценка не предоставлена.'
-        : String(entity.aml_score)
+        : String(entity.aml_score) +
+          ' — значение поставщика; это не процент вероятности мошенничества.'
     );
 
     if (entity.label) {
@@ -222,20 +245,29 @@ async function checkAml(address, chain) {
 
     if (entity.category) {
       addDetail('Категория сервиса', String(entity.category));
+      addDetail(
+        'Пояснение категории',
+        explainCategory(entity.category)
+      );
     }
 
     if (entity.sanctioned !== undefined) {
       addDetail(
         'Санкционная отметка',
         entity.sanctioned
-          ? 'Сервис указывает отметку'
-          : 'Сервис не указал отметку'
+          ? 'Сервис указывает отметку. Требуется дополнительная проверка по надёжному источнику.'
+          : 'Сервис не указал такую отметку. Это не гарантирует отсутствие санкционных рисков.'
       );
     }
 
     addDetail(
+      'Ограничения AML-данных',
+      'Метка и оценка предоставлены сторонним сервисом. Мы не можем независимо подтвердить их точность только по этому ответу.'
+    );
+
+    addDetail(
       'Важно',
-      'Это данные стороннего сервиса. Они не доказывают мошенничество или безопасность адреса.'
+      'Данные не доказывают мошенничество или безопасность адреса. Не отправляй средства только на основании этой проверки.'
     );
 
   } catch (error) {
@@ -297,7 +329,7 @@ $('check').onclick = async () => {
       addDetail('Подтверждённые транзакции', String(txCount));
       addDetail('Транзакции в мемпуле', String(pendingCount));
       addDetail('Расчётный баланс', formatBtc(balance));
-      addDetail('Оценка риска', 'Не определена по одним только данным блокчейна.');
+      addDetail('Оценка риска по блокчейну', 'Не определена. Количество транзакций и баланс сами по себе не устанавливают риск.');
       addDetail('Источник', 'Blockstream Esplora API');
 
       await checkAml(v, 'BTC');
@@ -339,7 +371,7 @@ $('check').onclick = async () => {
         );
       }
 
-      addDetail('Оценка риска', 'Не определена по одним только данным блокчейна.');
+      addDetail('Оценка риска по блокчейну', 'Не определена. Баланс и тип адреса сами по себе не устанавливают риск.');
       addDetail('Источник', 'Blockscout Ethereum API');
 
       await checkAml(v, 'ETH');
