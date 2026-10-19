@@ -193,11 +193,6 @@ function explainCategory(category) {
     'Это категория стороннего сервиса. Её точный смысл зависит от методики поставщика. Одна метка не является окончательным доказательством.';
 }
 
-/*
- * Индекс ScamRadar — эвристическая оценка меток,
- * а не вероятность мошенничества.
- * Баланс и количество транзакций не повышают риск сами по себе.
- */
 function calculateRisk(entity) {
   if (!entity) {
     return {
@@ -211,11 +206,6 @@ function calculateRisk(entity) {
   const label = String(entity.label || '').trim().toLowerCase();
   const combined = category + ' ' + label;
 
-  /*
-   * Важно: burn — возможная метка адреса сжигания.
-   * Не присваиваем ей условные 5 баллов и не считаем её
-   * признаком мошенничества.
-   */
   if (category === 'burn' || label === 'burn') {
     return {
       score: null,
@@ -423,23 +413,33 @@ function renderRiskIndex() {
 
 async function checkAml(address, chain) {
   try {
-    const response = await fetch(
-      'https://aged-shadow-c96e.nemytow.workers.dev/',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          addresses: [{
-            wallet_address: address,
-            chain: chain
-          }],
-          include: ['aml_score', 'category', 'counterparties'],
-          top_n: 5
-        })
-      }
-    );
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    let response;
+
+    try {
+      response = await fetch(
+        'https://aged-shadow-c96e.nemytowwork.workers.dev/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            addresses: [{
+              wallet_address: address,
+              chain: chain
+            }],
+            include: ['aml_score', 'category', 'counterparties'],
+            top_n: 5
+          }),
+          signal: controller.signal
+        }
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     const responseText = await response.text();
 
@@ -526,7 +526,13 @@ async function checkAml(address, chain) {
     };
 
   } catch (error) {
-    const message = error.message || 'Ошибка сети';
+    let message = error.message || 'Ошибка сети';
+
+    if (error.name === 'AbortError') {
+      message = 'AML-сервис не ответил за 12 секунд.';
+    } else if (message === 'Failed to fetch') {
+      message = 'Не удалось соединиться с AML-сервисом. Возможны проблемы сети, адреса Worker или CORS.';
+    }
 
     addDetail(
       'AML-сигналы',
