@@ -147,7 +147,27 @@ function formatBtc(sats) {
 async function checkAml(address, chain) {
   try {
     const response = await fetch(
+      '
+  return (Number(sats) / 100000000)
+    .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
+}
+
+async function checkAml(address, chain) {
+  try {
+    const response = await fetch(
       'https://aged-shadow-c96e.nemytow.workers.dev/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          addresses: [{
+            wallet_address: address,
+            chain: chain
+          }],
+          include: [
+     ',
       {
         method: 'POST',
         headers: {
