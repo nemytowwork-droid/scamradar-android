@@ -75,7 +75,7 @@ button:disabled{opacity:.6;cursor:wait}
 <div class="eyebrow">SCAMRADAR SECURITY INDEX</div>
 <div class="risk-top">
 <div>
-<div class="muted">Индекс риска ScamRadar</div>
+<div class="muted">Индекс выявленных риск-сигналов</div>
 <div class="risk-number" id="riskNumber">—/100</div>
 </div>
 <span class="risk-pill" id="riskLabel">Недостаточно данных</span>
@@ -83,7 +83,7 @@ button:disabled{opacity:.6;cursor:wait}
 <div class="risk-track"><div class="risk-fill" id="riskFill"></div></div>
 <div class="muted" id="confidenceText">Полнота данных: не определена</div>
 <p class="risk-note" id="riskExplanation"></p>
-<p class="risk-note">Индекс не является процентом вероятности мошенничества. Низкий индекс не гарантирует безопасность.</p>
+<p class="risk-note">Индекс отражает только найденные правилами ScamRadar сигналы. Это не процент вероятности мошенничества. Низкий индекс не гарантирует безопасность, а отсутствие меток не означает отсутствие риска.</p>
 </div>
 <div id="details"></div>
 <button class="secondary" id="copy">Копировать отчёт</button>
@@ -187,85 +187,143 @@ function explainCategory(category) {
     phishing:
       'Эта метка связана с возможным фишингом — попытками обманом получить данные или средства.',
     scam:
-      'Поставщик связал адрес с категорией возможного мошенничества. Перед выводами необходимо перепроверить источник и контекст.'
+      'Поставщик связал адрес с категорией возможного мошенничества. Перед выводами необходимо перепроверить источник и контекст.',
+    individual:
+      'Категория individual обычно означает, что поставщик классифицировал адрес как связанный с физическим лицом. Она сама по себе не подтверждает личность владельца и не говорит о безопасности адреса.',
+    exchange:
+      'Категория exchange может указывать на связь адреса с биржей. Это не доказывает, кому именно принадлежит адрес и безопасен ли он.'
   };
 
   return explanations[key] ||
     'Это категория стороннего сервиса. Её точный смысл зависит от методики поставщика. Одна метка не является окончательным доказательством.';
 }
 
+/*
+ * Индекс — эвристическая оценка найденных меток, а не вероятность мошенничества.
+ * Баланс, число транзакций и само по себе наличие AML-записи баллы не повышают.
+ * Если нет содержательных сигналов, результат будет "недостаточно сигналов",
+ * а не утверждение, что адрес безопасен.
+ */
 function calculateRisk(entity) {
   if (!entity) return null;
 
-  const combined = (
-    String(entity.category || '') + ' ' +
-    String(entity.label || '')
-  ).toLowerCase();
+  const category = String(entity.category || '').toLowerCase();
+  const label = String(entity.label || '').toLowerCase();
+  const combined = category + ' ' + label;
 
-  let score = 5;
+  let score = 0;
   const reasons = [];
+  const matchedRules = new Set();
 
   const rules = [
     {
+      id: 'sanctions',
+      words: ['sanction', 'sanctioned', 'санкц'],
+      score: 90,
+      reason: 'Обнаружено упоминание санкций в метке или категории. Нужно проверить первоисточник и точное совпадение.'
+    },
+    {
+      id: 'terrorism',
+      words: ['terrorism', 'terrorist', 'терроризм', 'террорист'],
+      score: 90,
+      reason: 'Есть метка, связанная с терроризмом. Необходимо независимо перепроверить её по надёжному первоисточнику.'
+    },
+    {
+      id: 'ransomware',
       words: ['ransomware', 'file-locker', 'file locker'],
-      score: 75,
+      score: 80,
       reason: 'Есть метка, связанная с программами-вымогателями.'
     },
     {
-      words: ['phishing'],
-      score: 75,
+      id: 'phishing',
+      words: ['phishing', 'фишинг'],
+      score: 80,
       reason: 'Есть метка, связанная с фишингом.'
     },
     {
+      id: 'scam',
       words: ['scam', 'fraud', 'мошен'],
-      score: 70,
+      score: 75,
       reason: 'Есть метка, связанная с возможным мошенничеством.'
     },
     {
-      words: ['stolen', 'hack', 'exploit'],
-      score: 65,
+      id: 'stolen',
+      words: ['stolen', 'stolen funds', 'theft', 'hack', 'exploit', 'краден', 'краж'],
+      score: 70,
       reason: 'Есть метка, связанная с кражей средств или эксплуатацией уязвимостей.'
     },
     {
-      words: ['malware'],
+      id: 'malware',
+      words: ['malware', 'вредонос'],
       score: 65,
       reason: 'Есть метка, связанная с вредоносным программным обеспечением.'
     },
     {
+      id: 'darknet',
       words: ['darknet', 'dark web'],
       score: 55,
-      reason: 'Есть метка, связанная с darknet.'
+      reason: 'Есть метка, связанная с darknet. Нужна проверка контекста и источника.'
     },
     {
-      words: ['mixer', 'tumbler'],
-      score: 40,
+      id: 'mixer',
+      words: ['mixer', 'tumbler', 'mixing service'],
+      score: 35,
       reason: 'Есть метка сервиса смешивания транзакций. Сама по себе она не доказывает незаконную деятельность.'
     }
   ];
 
   for (const rule of rules) {
-    if (rule.words.some(word => combined.includes(word))) {
+    if (
+      !matchedRules.has(rule.id) &&
+      rule.words.some(word => combined.includes(word))
+    ) {
+      matchedRules.add(rule.id);
       score = Math.max(score, rule.score);
       reasons.push(rule.reason);
     }
   }
 
   if (entity.sanctioned === true) {
-    score = Math.max(score, 90);
+    score = Math.max(score, 95);
     reasons.push(
-      'Поставщик сообщил о санкционной отметке. Её нужно перепроверить по надёжному источнику.'
+      'AML-поставщик явно указал санкционную отметку. Это серьёзный сигнал, который необходимо независимо перепроверить.'
     );
   }
 
+  /*
+   * Не превращаем обычные категории вроде "individual" или
+   * "exchange" в сигнал мошенничества.
+   */
+  const hasUsefulClassification = Boolean(
+    entity.category ||
+    entity.label ||
+    entity.sanctioned !== undefined
+  );
+
+  if (!reasons.length && !hasUsefulClassification) {
+    return {
+      score: null,
+      reasons: [
+        'Поставщик не вернул пригодных для оценки классификационных данных.'
+      ],
+      insufficient: true
+    };
+  }
+
   if (!reasons.length) {
-    reasons.push(
-      'В полученных данных не обнаружены известные нам высокорисковые метки. Это не доказывает безопасность адреса.'
-    );
+    return {
+      score: null,
+      reasons: [
+        'В доступных метках не найдено совпадений с правилами риска ScamRadar. Этого недостаточно, чтобы утверждать, что адрес безопасен.'
+      ],
+      insufficient: true
+    };
   }
 
   return {
     score: Math.max(0, Math.min(100, score)),
-    reasons
+    reasons,
+    insufficient: false
   };
 }
 
@@ -292,7 +350,7 @@ function renderRiskIndex() {
   }
 
   if (entity) {
-    confidence += 30;
+    confidence += 25;
     qualityParts.push('ответ AML-сервиса получен');
 
     if (
@@ -300,7 +358,7 @@ function renderRiskIndex() {
       entity.label ||
       entity.sanctioned !== undefined
     ) {
-      confidence += 10;
+      confidence += 15;
       qualityParts.push('есть классификационные AML-данные');
     }
   }
@@ -308,10 +366,10 @@ function renderRiskIndex() {
   confidence = Math.min(100, confidence);
 
   const confidenceLabel = confidence >= 80
-    ? 'Высокая'
+    ? 'Высокая полнота'
     : confidence >= 55
-      ? 'Средняя'
-      : 'Низкая';
+      ? 'Средняя полнота'
+      : 'Низкая полнота';
 
   $('confidenceText').textContent =
     'Полнота данных: ' + confidenceLabel +
@@ -322,23 +380,27 @@ function renderRiskIndex() {
 
   const risk = calculateRisk(entity);
 
-  if (!risk) {
+  if (!risk || risk.insufficient || risk.score === null) {
     $('riskNumber').textContent = '—/100';
-    $('riskLabel').textContent = 'Недостаточно данных';
+    $('riskLabel').textContent = 'Нет достаточных сигналов';
     $('riskFill').style.width = '0%';
+    $('riskFill').style.background = 'var(--green)';
 
     $('riskExplanation').textContent =
-      'Не удалось рассчитать индекс по AML-сигналам: пригодные данные не получены. Ошибка или лимит сервиса не означают нулевой риск.';
+      (risk && risk.reasons
+        ? risk.reasons.join(' ')
+        : 'Не удалось получить пригодные AML-данные для расчёта.') +
+      ' Это не означает, что адрес безопасен.';
 
     addDetail(
       'Индекс риска ScamRadar',
-      'Недостаточно данных для расчёта. Это не означает, что адрес безопасен.'
+      'Недостаточно подтверждённых сигналов для числовой оценки. Нельзя считать это нулевым риском.'
     );
 
     addDetail(
       'Полнота данных',
       confidence + '/100 — ' + confidenceLabel + '. ' +
-      qualityParts.join('; ') + '.'
+      (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
     );
 
     return;
@@ -349,11 +411,11 @@ function renderRiskIndex() {
   if (risk.score >= 75) {
     label = 'Критический сигнал';
   } else if (risk.score >= 50) {
-    label = 'Высокий риск-сигнал';
+    label = 'Сильный сигнал';
   } else if (risk.score >= 20) {
-    label = 'Требует проверки';
+    label = 'Умеренный сигнал';
   } else {
-    label = 'Мало выявленных сигналов';
+    label = 'Слабый сигнал';
   }
 
   $('riskNumber').textContent = risk.score + '/100';
@@ -368,7 +430,7 @@ function renderRiskIndex() {
 
   $('riskExplanation').textContent =
     risk.reasons.join(' ') +
-    ' Количество транзакций и баланс сами по себе не повышают индекс. Оценка внешнего AML-сервиса не приравнивается к вероятности мошенничества.';
+    ' Баланс и количество транзакций сами по себе не повышают индекс. Оценка внешнего AML-сервиса не приравнивается к вероятности мошенничества.';
 
   addDetail(
     'Индекс риска ScamRadar',
@@ -378,7 +440,7 @@ function renderRiskIndex() {
   addDetail(
     'Полнота данных',
     confidence + '/100 — ' + confidenceLabel + '. ' +
-    qualityParts.join('; ') + '.'
+    (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
   );
 }
 
