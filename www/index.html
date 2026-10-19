@@ -146,7 +146,7 @@ function formatBtc(sats) {
     .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
 }
 
-/* Исправленная AML-проверка */
+/* AML: показываем подробности ошибки сервиса */
 async function checkAml(address, chain) {
   try {
     const response = await fetch(
@@ -161,28 +161,50 @@ async function checkAml(address, chain) {
             wallet_address: address,
             chain: chain
           }],
-          include: [
-            'aml_score',
-            'category',
-            'counterparties'
-          ],
+          include: ['aml_score', 'category', 'counterparties'],
           top_n: 5
         })
       }
     );
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      throw new Error('AML-сервис вернул HTTP ' + response.status);
+      let errorDetail = responseText.slice(0, 500);
+
+      try {
+        const parsedError = JSON.parse(responseText);
+        errorDetail =
+          parsedError.error ||
+          parsedError.message ||
+          parsedError.detail ||
+          JSON.stringify(parsedError).slice(0, 500);
+      } catch (e) {}
+
+      throw new Error(
+        'AML HTTP ' + response.status + ': ' + errorDetail
+      );
     }
 
-    const data = await response.json();
+    let data;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(
+        'AML вернул некорректный JSON: ' +
+        responseText.slice(0, 250)
+      );
+    }
+
     const entities = Array.isArray(data.entities) ? data.entities : [];
     const entity = entities[0];
 
     if (!entity) {
       addDetail(
         'AML-сигналы',
-        'Сервис не вернул запись для этого адреса. Риск неизвестен.'
+        'Сервис не вернул запись для адреса. Риск неизвестен. Ответ: ' +
+        JSON.stringify(data).slice(0, 350)
       );
       return;
     }
@@ -308,6 +330,7 @@ $('check').onclick = async () => {
 
       if (data.coin_balance !== undefined && data.coin_balance !== null) {
         const eth = Number(data.coin_balance) / 1e18;
+
         addDetail(
           'Баланс ETH',
           Number.isFinite(eth)
