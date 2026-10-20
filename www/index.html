@@ -9,7 +9,8 @@
 :root{color-scheme:dark;--green:#83ffb0;--muted:#a4b6aa}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at top,#163324,#07110d 55%);color:#f3fff7;font:16px system-ui,sans-serif}
-main{max-width:720px;margin:auto;padding:24px 16px 40px}
+#chainBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+main{position:relative;z-index:1;max-width:720px;margin:auto;padding:24px 16px 40px}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:48px;height:48px;border:1px solid #316c4b;border-radius:15px;display:grid;place-items:center;color:var(--green);font-size:28px}
 .eyebrow{font-size:11px;letter-spacing:2px;color:var(--green);font-weight:800}
@@ -17,7 +18,7 @@ h1{margin:2px 0;font-size:23px}
 h2{font-size:30px;line-height:1.1}
 .muted,.notice{color:var(--muted);font-size:13px;line-height:1.55}
 .hero{margin:32px 0 20px}
-.panel{background:linear-gradient(145deg,#12251a,#0c1711);border:1px solid #20372b;border-radius:20px;padding:18px;margin:14px 0}
+.panel{background:linear-gradient(145deg,rgba(18,37,26,.9),rgba(12,23,17,.9));border:1px solid #20372b;border-radius:20px;padding:18px;margin:14px 0}
 label{display:block;font-size:13px;margin-bottom:9px}
 input{width:100%;background:#07120c;color:white;border:1px solid #2c4937;border-radius:12px;padding:15px;font:inherit}
 button{border:0;border-radius:12px;padding:14px;font:700 15px system-ui;cursor:pointer}
@@ -32,7 +33,7 @@ button:disabled{opacity:.6;cursor:wait}
 .feature span{font-size:12px;color:var(--muted)}
 .status{border:1px solid #326348;border-radius:12px;padding:12px;margin:12px 0;color:var(--green);overflow-wrap:anywhere}
 .footer{text-align:center;color:#82988a;font-size:11px;padding:16px}
-.risk-card{border-color:#365d47;background:linear-gradient(145deg,#142b1d,#0b1710)}
+.risk-card{border-color:#365d47;background:linear-gradient(145deg,rgba(20,43,29,.92),rgba(11,23,16,.92))}
 .risk-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .risk-number{font-size:42px;line-height:1;font-weight:850;letter-spacing:-1px}
 .risk-track{height:10px;background:#26392d;border-radius:99px;overflow:hidden;margin:14px 0 8px}
@@ -43,6 +44,7 @@ button:disabled{opacity:.6;cursor:wait}
 </style>
 </head>
 <body>
+<canvas id="chainBg" aria-hidden="true"></canvas>
 <main>
 <header class="brand">
   <div class="logo">⌁</div>
@@ -105,7 +107,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20b</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20c</div>
 </main>
 
 <script>
@@ -858,6 +860,244 @@ $('clear').onclick = () => {
 };
 
 draw();
+
+// ===== Фоновая анимация: блоки блокчейна, соединяющиеся в цепь =====
+try {
+  (function () {
+    // Яркость фона: 0.6 — тише, 1 — как сейчас, 1.5 — ярче.
+    const INTENSITY = 1;
+
+    const canvas = $('chainBg');
+    if (!canvas || !canvas.getContext) return;
+
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = !!(window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    const GREEN = [131, 255, 176];
+    const CYAN = [92, 225, 255];
+    const MAGENTA = [255, 90, 200];
+
+    let w = 0;
+    let h = 0;
+    let dpr = 1;
+    let nodes = [];
+    let links = [];
+    let pulses = [];
+    let lastFrame = 0;
+    let pulseTimer = 1;
+    let linkDist = 150;
+    let resizeTimer = null;
+
+    function rgba(color, alpha) {
+      const a = Math.max(0, Math.min(1, alpha * INTENSITY));
+      return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + a.toFixed(3) + ')';
+    }
+
+    function makeNode() {
+      const r = Math.random();
+      const color = r < 0.78 ? GREEN : (r < 0.94 ? CYAN : MAGENTA);
+      const speed = 4 + Math.random() * 8;
+      const angle = Math.random() * Math.PI * 2;
+
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 7 + Math.random() * 9,
+        color: color,
+        flash: 0
+      };
+    }
+
+    function buildLinks() {
+      links = [];
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+
+          if (d < linkDist) {
+            links.push({ a: i, b: j, d: d });
+          }
+        }
+      }
+    }
+
+    function update(dt) {
+      for (const n of nodes) {
+        n.x += n.vx * dt;
+        n.y += n.vy * dt;
+
+        if (n.x < -20) { n.x = -20; n.vx = Math.abs(n.vx); }
+        if (n.x > w + 20) { n.x = w + 20; n.vx = -Math.abs(n.vx); }
+        if (n.y < -20) { n.y = -20; n.vy = Math.abs(n.vy); }
+        if (n.y > h + 20) { n.y = h + 20; n.vy = -Math.abs(n.vy); }
+
+        n.flash = Math.max(0, n.flash - dt * 1.6);
+      }
+
+      buildLinks();
+
+      pulseTimer -= dt;
+
+      if (pulseTimer <= 0) {
+        if (links.length && pulses.length < 4) {
+          const l = links[Math.floor(Math.random() * links.length)];
+          pulses.push({
+            a: l.a,
+            b: l.b,
+            t: 0,
+            speed: 0.45 + Math.random() * 0.35
+          });
+          pulseTimer = 0.8 + Math.random() * 1.4;
+        } else {
+          pulseTimer = 0.5;
+        }
+      }
+
+      const spawned = [];
+
+      pulses = pulses.filter(p => {
+        if (!nodes[p.a] || !nodes[p.b]) return false;
+
+        p.t += p.speed * dt;
+
+        if (p.t >= 1) {
+          nodes[p.b].flash = 1;
+
+          // Блок «подтверждён» — импульс может пойти дальше по цепи.
+          const next = links.filter(l =>
+            (l.a === p.b && l.b !== p.a) ||
+            (l.b === p.b && l.a !== p.a)
+          );
+
+          if (next.length && Math.random() < 0.6 && pulses.length + spawned.length < 4) {
+            const l = next[Math.floor(Math.random() * next.length)];
+            const from = p.b;
+            const to = l.a === from ? l.b : l.a;
+
+            spawned.push({
+              a: from,
+              b: to,
+              t: 0,
+              speed: 0.45 + Math.random() * 0.35
+            });
+          }
+
+          return false;
+        }
+
+        return true;
+      });
+
+      pulses = pulses.concat(spawned);
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      for (const l of links) {
+        const a = nodes[l.a];
+        const b = nodes[l.b];
+        const k = 1 - l.d / linkDist;
+
+        ctx.strokeStyle = rgba(GREEN, 0.05 + k * 0.14);
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+
+      for (const n of nodes) {
+        const s = n.size;
+        const half = s / 2;
+        const f = n.flash;
+
+        ctx.fillStyle = rgba(n.color, 0.05 + f * 0.18);
+        ctx.fillRect(n.x - half, n.y - half, s, s);
+
+        ctx.strokeStyle = rgba(n.color, 0.22 + f * 0.5);
+        ctx.strokeRect(n.x - half + 0.5, n.y - half + 0.5, s, s);
+
+        ctx.fillStyle = rgba(n.color, 0.25 + f * 0.4);
+        ctx.fillRect(n.x - half + 2, n.y - 1, s - 4, 1.5);
+      }
+
+      for (const p of pulses) {
+        const a = nodes[p.a];
+        const b = nodes[p.b];
+        if (!a || !b) continue;
+
+        const x = a.x + (b.x - a.x) * p.t;
+        const y = a.y + (b.y - a.y) * p.t;
+
+        ctx.fillStyle = rgba(CYAN, 0.18);
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+
+        ctx.fillStyle = rgba(GREEN, 0.8);
+        ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+      }
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const target = Math.max(14, Math.min(34, Math.round(w * h / 26000)));
+
+      while (nodes.length < target) nodes.push(makeNode());
+      if (nodes.length > target) nodes.length = target;
+
+      for (const n of nodes) {
+        n.x = Math.min(n.x, w);
+        n.y = Math.min(n.y, h);
+      }
+
+      linkDist = Math.max(120, Math.min(200, Math.sqrt(w * h) / 5));
+
+      if (reduceMotion) {
+        buildLinks();
+        render();
+      }
+    }
+
+    function frame(ts) {
+      requestAnimationFrame(frame);
+
+      // Около 30 кадров в секунду, чтобы не тратить батарею.
+      if (ts - lastFrame < 33) return;
+
+      const dt = Math.min(0.1, (ts - lastFrame) / 1000);
+      lastFrame = ts;
+
+      update(dt);
+      render();
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 150);
+    });
+
+    resize();
+
+    if (!reduceMotion) {
+      requestAnimationFrame(frame);
+    }
+  })();
+} catch (e) {
+  // Если анимация не запустилась, приложение продолжает работать без неё.
+}
 </script>
 </body>
 </html>
