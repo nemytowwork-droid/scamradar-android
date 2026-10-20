@@ -41,6 +41,17 @@ button:disabled{opacity:.6;cursor:wait}
 .risk-pill{display:inline-block;border:1px solid #365d47;border-radius:99px;padding:6px 10px;font-size:12px;color:var(--green)}
 .risk-note{font-size:13px;line-height:1.5;color:var(--muted);margin:10px 0 0}
 .risk-card[hidden]{display:none}
+.verdict{display:none;border-radius:14px;padding:14px;margin:12px 0;border:1px solid #326348;background:rgba(131,255,176,.07)}
+.verdict .v-title{font-size:18px;font-weight:800;line-height:1.3;color:var(--green)}
+.verdict .v-text{font-size:13px;line-height:1.55;color:#c4d5ca;margin-top:6px}
+.verdict.v-crit{border-color:#ff657a;background:rgba(255,101,122,.12)}
+.verdict.v-crit .v-title{color:#ff8fa0}
+.verdict.v-high{border-color:#ff9a52;background:rgba(255,154,82,.11)}
+.verdict.v-high .v-title{color:#ffb37e}
+.verdict.v-mid{border-color:#ffd166;background:rgba(255,209,102,.09)}
+.verdict.v-mid .v-title{color:#ffe08f}
+.verdict.v-unknown{border-color:#6c7f73;background:rgba(164,182,170,.08)}
+.verdict.v-unknown .v-title{color:#d5e2da}
 </style>
 </head>
 <body>
@@ -62,9 +73,9 @@ button:disabled{opacity:.6;cursor:wait}
 </section>
 
 <section class="panel">
-  <label for="target">Bitcoin или Ethereum-адрес</label>
-  <input id="target" placeholder="Вставь BTC или 0x..." autocomplete="off" spellcheck="false">
-  <div><span class="chip">Bitcoin</span><span class="chip">Ethereum</span></div>
+  <label for="target">Bitcoin, Ethereum или Tron-адрес</label>
+  <input id="target" placeholder="Вставь BTC, 0x... или T..." autocomplete="off" spellcheck="false">
+  <div><span class="chip">Bitcoin</span><span class="chip">Ethereum</span><span class="chip">Tron</span><span class="chip">USDT</span></div>
   <button class="primary" id="check">⌕ Проверить адрес</button>
   <p class="notice">Вводи только публичный адрес. Не вводи seed-фразу, пароль или приватный ключ. Адрес передаётся сторонним API-сервисам для проверки.</p>
 </section>
@@ -73,6 +84,11 @@ button:disabled{opacity:.6;cursor:wait}
   <div class="eyebrow">ОТЧЁТ ПРОВЕРКИ</div>
   <h3 id="name"></h3>
   <div id="status" class="status"></div>
+
+  <div id="verdict" class="verdict">
+    <div class="v-title" id="vTitle"></div>
+    <div class="v-text" id="vText"></div>
+  </div>
 
   <div class="panel risk-card" id="riskCard" hidden>
     <div class="eyebrow">ИНДЕКС РИСКА SCAMRADAR</div>
@@ -96,7 +112,8 @@ button:disabled{opacity:.6;cursor:wait}
 <section class="panel">
   <h3>Что проверяет ScamRadar</h3>
   <div class="feature">◈ <strong>Bitcoin</strong><span>Баланс и статистика транзакций через Blockstream.</span></div>
-  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс, число транзакций и тип адреса через Blockscout.</span></div>
+  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс ETH и USDT, число транзакций и тип адреса через Blockscout.</span></div>
+  <div class="feature">◇ <strong>Tron и USDT</strong><span>Баланс TRX и USDT (TRC-20), даты активности адреса через TronGrid.</span></div>
   <div class="feature">◎ <strong>AML-сигналы</strong><span>Метки стороннего сервиса, если он их предоставляет.</span></div>
   <div class="feature">◉ <strong>История</strong><span>Последние восемь проверок сохраняются на устройстве.</span></div>
 </section>
@@ -107,17 +124,23 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20c</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20d</div>
 </main>
 
 <script>
 'use strict';
 
 const $ = id => document.getElementById(id);
+
+const TRON_USDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+const ETH_USDT = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+
 let history = [];
+let lastVerdict = '';
 let currentReport = {
   chain: null,
   txCount: null,
+  hasHistory: false,
   onchain: false,
   aml: null
 };
@@ -176,6 +199,35 @@ function saveHistory(value) {
 function formatBtc(sats) {
   return (Number(sats) / 100000000)
     .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
+}
+
+function formatDate(ms) {
+  const n = Number(ms);
+  if (!Number.isFinite(n) || n <= 0) return null;
+
+  const d = new Date(n);
+  if (isNaN(d.getTime())) return null;
+
+  return d.toLocaleDateString('ru-RU', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+function formatAge(ms) {
+  const n = Number(ms);
+  if (!Number.isFinite(n) || n <= 0) return '';
+
+  const days = Math.floor((Date.now() - n) / 86400000);
+  if (days < 0) return '';
+  if (days < 1) return ' (создан сегодня)';
+  if (days < 60) return ' (' + days + ' дн. назад)';
+
+  const months = Math.floor(days / 30);
+  if (months < 24) return ' (около ' + months + ' мес. назад)';
+
+  return ' (около ' + Math.floor(days / 365) + ' лет назад)';
 }
 
 function isTrueFlag(value) {
@@ -261,6 +313,7 @@ function calculateRisk(entity) {
   if (category === 'burn' || label === 'burn') {
     return {
       score: null,
+      kind: 'burn',
       reasons: [
         'AML-сервис обозначил адрес как burn — возможный адрес сжигания активов. Эта метка сама по себе не указывает на мошенничество. Данных для числовой оценки риска недостаточно.'
       ],
@@ -350,6 +403,83 @@ function calculateRisk(entity) {
   };
 }
 
+function setVerdict(level, title, text) {
+  const box = $('verdict');
+  box.className = 'verdict v-' + level;
+  box.style.display = 'block';
+  $('vTitle').textContent = title;
+  $('vText').textContent = text;
+  lastVerdict = title + '. ' + text;
+}
+
+function entityLabelText(entity) {
+  const parts = [];
+
+  if (entity && entity.label) parts.push(String(entity.label));
+  if (entity && entity.category) parts.push(String(entity.category));
+
+  return parts.join(' / ');
+}
+
+function showVerdict(entity, risk) {
+  if (!entity) {
+    setVerdict(
+      'unknown',
+      'Не удалось проверить метки риска',
+      'Данные блокчейна получены, но AML-сервис сейчас недоступен или не вернул запись. Риск неизвестен, и это не означает, что адрес безопасен. Повтори проверку позже.'
+    );
+    return;
+  }
+
+  if (!risk || risk.insufficient || risk.score === null) {
+    if (risk && risk.kind === 'burn') {
+      setVerdict(
+        'none',
+        'Похоже на адрес сжигания активов',
+        'Сервис пометил адрес как burn. Сама по себе эта метка не указывает на мошенничество. Это не гарантия безопасности, проверь контекст.'
+      );
+    } else {
+      setVerdict(
+        'none',
+        'Меток риска не найдено',
+        'Это не гарантия безопасности. Перед переводом перепроверь получателя другим способом и убедись, что адрес правильный.'
+      );
+    }
+    return;
+  }
+
+  const labelText = entityLabelText(entity);
+  const tail =
+    (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
+    'Индекс ScamRadar: ' + risk.score + '/100. Метка не является окончательным доказательством, но это повод проверить адрес.';
+
+  if (risk.score >= 75) {
+    setVerdict(
+      'crit',
+      'Высокий риск: найдены тревожные метки',
+      'Не отправляй средства, пока не проверишь адрес независимо. ' + tail
+    );
+  } else if (risk.score >= 50) {
+    setVerdict(
+      'high',
+      'Повышенный риск: есть серьёзные сигналы',
+      'Будь осторожен и перепроверь получателя перед переводом. ' + tail
+    );
+  } else if (risk.score >= 20) {
+    setVerdict(
+      'mid',
+      'Есть сигналы риска',
+      'Стоит внимательнее проверить адрес перед переводом. ' + tail
+    );
+  } else {
+    setVerdict(
+      'low',
+      'Найдены слабые сигналы',
+      tail
+    );
+  }
+}
+
 function renderRiskIndex() {
   $('riskCard').hidden = false;
 
@@ -363,13 +493,9 @@ function renderRiskIndex() {
     qualityParts.push('данные блокчейна получены');
   }
 
-  if (
-    currentReport.txCount !== null &&
-    currentReport.txCount !== undefined &&
-    Number.isFinite(Number(currentReport.txCount))
-  ) {
+  if (currentReport.hasHistory) {
     confidence += 15;
-    qualityParts.push('история транзакций доступна');
+    qualityParts.push('история адреса доступна');
   }
 
   if (entity) {
@@ -398,6 +524,8 @@ function renderRiskIndex() {
       : 'Недостаточно проверенных источников.');
 
   const risk = calculateRisk(entity);
+
+  showVerdict(entity, risk);
 
   if (!risk || risk.insufficient || risk.score === null) {
     $('riskNumber').textContent = '—/100';
@@ -614,6 +742,22 @@ async function checkAml(address, chain) {
   }
 }
 
+function tronUsdtBalance(account) {
+  const list = Array.isArray(account.trc20) ? account.trc20 : [];
+
+  for (const item of list) {
+    if (item && typeof item === 'object' && item[TRON_USDT] !== undefined) {
+      const n = Number(item[TRON_USDT]);
+
+      if (Number.isFinite(n)) {
+        return n / 1e6;
+      }
+    }
+  }
+
+  return 0;
+}
+
 $('check').onclick = async () => {
   const v = $('target').value.trim();
 
@@ -627,10 +771,13 @@ $('check').onclick = async () => {
   $('status').textContent = 'Проверяем адрес…';
   $('details').replaceChildren();
   $('riskCard').hidden = true;
+  $('verdict').style.display = 'none';
+  lastVerdict = '';
 
   currentReport = {
     chain: null,
     txCount: null,
+    hasHistory: false,
     onchain: false,
     aml: null
   };
@@ -643,7 +790,9 @@ $('check').onclick = async () => {
 
   const isEth = /^0x[a-fA-F0-9]{40}$/.test(v);
 
-  if (isBtc || isEth) {
+  const isTron = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(v);
+
+  if (isBtc || isEth || isTron) {
     saveHistory(v);
   }
 
@@ -683,6 +832,7 @@ $('check').onclick = async () => {
       currentReport = {
         chain: 'BTC',
         txCount: txCount,
+        hasHistory: Number.isFinite(txCount),
         onchain: true,
         aml: null
       };
@@ -731,10 +881,52 @@ $('check').onclick = async () => {
         }
       }
 
+      // Баланс USDT (ERC-20) на Ethereum.
+      let usdtText = 'Не удалось получить данные.';
+
+      try {
+        const tokenBalances = await getJson(
+          'https://eth.blockscout.com/api/v2/addresses/' +
+            encodeURIComponent(v) + '/token-balances',
+          'Blockscout'
+        );
+
+        if (Array.isArray(tokenBalances)) {
+          let found = null;
+
+          for (const item of tokenBalances) {
+            const t = item && item.token ? item.token : {};
+            const addr = String(t.address_hash || t.address || '').toLowerCase();
+
+            if (addr === ETH_USDT) {
+              found = item;
+              break;
+            }
+          }
+
+          if (found) {
+            const dec = Number(found.token.decimals);
+            const decimals = Number.isFinite(dec) ? dec : 6;
+            const amount = Number(found.value) / Math.pow(10, decimals);
+
+            usdtText = Number.isFinite(amount)
+              ? amount.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT'
+              : 'Данные получены, но их не удалось отобразить.';
+          } else {
+            usdtText = '0 USDT';
+          }
+        }
+      } catch (e) {}
+
       $('status').textContent = 'Данные Ethereum получены.';
 
       addDetail('Сеть', 'Ethereum mainnet');
       addDetail('Адрес', data.hash || v);
+
+      addDetail(
+        'Важно про сеть',
+        'Адреса, начинающиеся с 0x, одинаковы в Ethereum, BNB Chain, Polygon и других сетях. ScamRadar проверил только сеть Ethereum.'
+      );
 
       if (data.is_contract !== undefined && data.is_contract !== null) {
         const contractFlag = data.is_contract;
@@ -772,6 +964,8 @@ $('check').onclick = async () => {
         addDetail('Баланс ETH', 'Источник не предоставил данные.');
       }
 
+      addDetail('Баланс USDT (ERC-20)', usdtText);
+
       addDetail(
         'Что это значит',
         'Мы получили публичные данные Ethereum. Баланс и число транзакций сами по себе не показывают, можно ли доверять владельцу.'
@@ -782,6 +976,7 @@ $('check').onclick = async () => {
       currentReport = {
         chain: 'ETH',
         txCount: txCount,
+        hasHistory: txCount !== null,
         onchain: true,
         aml: null
       };
@@ -789,12 +984,87 @@ $('check').onclick = async () => {
       currentReport.aml = await checkAml(v, 'ETH');
       renderRiskIndex();
 
+    } else if (isTron) {
+      const resp = await getJson(
+        'https://api.trongrid.io/v1/accounts/' + encodeURIComponent(v),
+        'TronGrid'
+      );
+
+      const account = resp && Array.isArray(resp.data) && resp.data.length
+        ? resp.data[0]
+        : null;
+
+      $('status').textContent = 'Данные Tron получены.';
+
+      addDetail('Сеть', 'Tron mainnet');
+      addDetail('Адрес', v);
+
+      let hasHistory = false;
+
+      if (!account) {
+        addDetail(
+          'Состояние адреса',
+          'TronGrid не вернул записей об этом адресе. Обычно так бывает с адресом, который ещё не активирован в сети. У такого адреса нет истории, на которую можно опереться.'
+        );
+        addDetail('Баланс TRX', '0 TRX');
+        addDetail('Баланс USDT (TRC-20)', '0 USDT');
+      } else {
+        const created = account.create_time;
+        const lastOp = account.latest_opration_time || account.latest_operation_time;
+
+        const createdText = formatDate(created);
+        const lastText = formatDate(lastOp);
+
+        if (createdText) {
+          addDetail('Адрес создан', createdText + formatAge(created));
+          hasHistory = true;
+        } else {
+          addDetail('Адрес создан', 'Источник не предоставил дату.');
+        }
+
+        if (lastText) {
+          addDetail('Последняя операция', lastText);
+        }
+
+        const trx = Number(account.balance || 0) / 1e6;
+
+        addDetail(
+          'Баланс TRX',
+          trx.toLocaleString('ru-RU', { maximumFractionDigits: 6 }) + ' TRX'
+        );
+
+        const usdt = tronUsdtBalance(account);
+
+        addDetail(
+          'Баланс USDT (TRC-20)',
+          usdt.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT'
+        );
+      }
+
+      addDetail(
+        'Что это значит',
+        'Мы получили публичные данные сети Tron. Баланс и даты активности сами по себе не показывают, можно ли доверять владельцу.'
+      );
+
+      addDetail('Источник данных', 'TronGrid API');
+
+      currentReport = {
+        chain: 'TRON',
+        txCount: null,
+        hasHistory: hasHistory,
+        onchain: true,
+        aml: null
+      };
+
+      currentReport.aml = await checkAml(v, 'TRON');
+      renderRiskIndex();
+
     } else {
       $('status').textContent = 'Не удалось распознать формат адреса.';
 
       addDetail(
         'Поддерживаемые адреса',
-        'Bitcoin mainnet (1…, 3…, bc1…) и Ethereum mainnet (0x + 40 шестнадцатеричных символов).'
+        'Bitcoin (1…, 3…, bc1…), Ethereum (0x + 40 шестнадцатеричных символов) и Tron (T… из 34 символов). USDT проверяется в сетях Tron (TRC-20) и Ethereum (ERC-20).'
       );
 
       addDetail(
@@ -804,7 +1074,7 @@ $('check').onclick = async () => {
 
       addDetail(
         'Другие сети',
-        'Solana, Tron, BNB Chain и другие сети пока не поддерживаются.'
+        'Solana, BNB Chain и другие сети пока не поддерживаются.'
       );
     }
 
@@ -833,7 +1103,9 @@ $('copy').onclick = async () => {
   const report =
     'ScamRadar — предварительный отчёт\n' +
     'Адрес: ' + $('name').textContent + '\n' +
-    $('status').textContent + '\n\n' +
+    $('status').textContent + '\n' +
+    (lastVerdict ? 'Вывод: ' + lastVerdict + '\n' : '') +
+    '\n' +
     $('details').innerText + '\n\n' +
     'Важно: индекс ScamRadar отражает найденные сигналы, а не вероятность мошенничества. Результат не гарантирует безопасность.';
 
