@@ -176,9 +176,6 @@ function formatBtc(sats) {
     .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
 }
 
-/* Безопасно читаем флаги из API:
-   true, "true" и 1 считаются включёнными.
-   Строка "false" не считается включённой. */
 function isTrueFlag(value) {
   return value === true ||
     value === 1 ||
@@ -432,7 +429,7 @@ async function checkAml(address, chain) {
 
     try {
       response = await fetch(
-        'https://aged-shadow-c96e.nemytow.workers.dev/',
+        'https://aged-shadow-c96e.nemytowwork.workers.dev/',
         {
           method: 'POST',
           headers: {
