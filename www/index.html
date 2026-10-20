@@ -124,7 +124,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20d</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20e</div>
 </main>
 
 <script>
@@ -134,6 +134,7 @@ const $ = id => document.getElementById(id);
 
 const TRON_USDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const ETH_USDT = '0xdac17f958d2ee523a2206206994597c13d831ec7';
+const AML_TIMEOUT_MS = 30000;
 
 let history = [];
 let lastVerdict = '';
@@ -431,6 +432,8 @@ function showVerdict(entity, risk) {
     return;
   }
 
+  const labelText = entityLabelText(entity);
+
   if (!risk || risk.insufficient || risk.score === null) {
     if (risk && risk.kind === 'burn') {
       setVerdict(
@@ -442,13 +445,13 @@ function showVerdict(entity, risk) {
       setVerdict(
         'none',
         'Меток риска не найдено',
+        (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
         'Это не гарантия безопасности. Перед переводом перепроверь получателя другим способом и убедись, что адрес правильный.'
       );
     }
     return;
   }
 
-  const labelText = entityLabelText(entity);
   const tail =
     (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
     'Индекс ScamRadar: ' + risk.score + '/100. Метка не является окончательным доказательством, но это повод проверить адрес.';
@@ -592,11 +595,17 @@ function renderRiskIndex() {
 }
 
 async function checkAml(address, chain) {
+  const statusBefore = $('status').textContent;
+
+  $('status').textContent =
+    statusBefore + ' Проверяем метки риска (для очень активных адресов до 30 секунд)…';
+
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const timeout = setTimeout(() => controller.abort(), AML_TIMEOUT_MS);
 
     let response;
+    let responseText;
 
     try {
       response = await fetch(
@@ -617,11 +626,11 @@ async function checkAml(address, chain) {
           signal: controller.signal
         }
       );
+
+      responseText = await response.text();
     } finally {
       clearTimeout(timeout);
     }
-
-    const responseText = await response.text();
 
     if (!response.ok) {
       let errorDetail = responseText.slice(0, 500);
@@ -725,7 +734,9 @@ async function checkAml(address, chain) {
     let message = error.message || 'Ошибка сети';
 
     if (error.name === 'AbortError') {
-      message = 'AML-сервис не ответил за 12 секунд.';
+      message =
+        'AML-сервис не ответил за ' + Math.round(AML_TIMEOUT_MS / 1000) +
+        ' секунд. Так бывает с очень активными адресами (биржи, крупные контракты). Повтори проверку позже.';
     } else if (message === 'Failed to fetch') {
       message = 'Не удалось соединиться с AML-сервисом. Возможны проблемы сети, Worker или CORS.';
     }
@@ -739,6 +750,9 @@ async function checkAml(address, chain) {
       available: false,
       error: message
     };
+
+  } finally {
+    $('status').textContent = statusBefore;
   }
 }
 
@@ -881,40 +895,26 @@ $('check').onclick = async () => {
         }
       }
 
-      // Баланс USDT (ERC-20) на Ethereum.
+      // Баланс USDT (ERC-20): запрос баланса одного токена.
       let usdtText = 'Не удалось получить данные.';
 
       try {
-        const tokenBalances = await getJson(
-          'https://eth.blockscout.com/api/v2/addresses/' +
-            encodeURIComponent(v) + '/token-balances',
+        const tb = await getJson(
+          'https://eth.blockscout.com/api?module=account&action=tokenbalance' +
+            '&contractaddress=' + ETH_USDT +
+            '&address=' + encodeURIComponent(v),
           'Blockscout'
         );
 
-        if (Array.isArray(tokenBalances)) {
-          let found = null;
+        if (tb && String(tb.status) === '1' && tb.result !== undefined && tb.result !== null) {
+          const raw = Number(tb.result);
 
-          for (const item of tokenBalances) {
-            const t = item && item.token ? item.token : {};
-            const addr = String(t.address_hash || t.address || '').toLowerCase();
-
-            if (addr === ETH_USDT) {
-              found = item;
-              break;
-            }
+          if (Number.isFinite(raw)) {
+            usdtText =
+              (raw / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT';
           }
-
-          if (found) {
-            const dec = Number(found.token.decimals);
-            const decimals = Number.isFinite(dec) ? dec : 6;
-            const amount = Number(found.value) / Math.pow(10, decimals);
-
-            usdtText = Number.isFinite(amount)
-              ? amount.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT'
-              : 'Данные получены, но их не удалось отобразить.';
-          } else {
-            usdtText = '0 USDT';
-          }
+        } else if (tb && tb.message) {
+          usdtText = 'Не удалось получить данные (' + String(tb.message).slice(0, 80) + ').';
         }
       } catch (e) {}
 
