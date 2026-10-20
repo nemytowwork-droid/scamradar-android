@@ -28,18 +28,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Check required secrets
-        env:
-          KEYSTORE_BASE64: ${{ secrets.SCAMRADAR_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.SCAMRADAR_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.SCAMRADAR_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.SCAMRADAR_KEY_PASSWORD }}
-        run: |
-          test -n "$KEYSTORE_BASE64" || (echo "Missing keystore secret" && exit 1)
-          test -n "$KEYSTORE_PASSWORD" || (echo "Missing store password" && exit 1)
-          test -n "$KEY_ALIAS" || (echo "Missing key alias" && exit 1)
-          test -n "$KEY_PASSWORD" || (echo "Missing key password" && exit 1)
-
       - name: Install dependencies
         run: npm install
 
@@ -49,89 +37,34 @@ jobs:
       - name: Sync web assets
         run: npx cap sync android
 
-      - name: Prepare signing key
-        env:
-          KEYSTORE_BASE64: ${{ secrets.SCAMRADAR_KEYSTORE_BASE64 }}
-        run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/scamradar-release.jks
-          test -s android/app/scamradar-release.jks
-
-      - name: Configure release signing
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("android/app/build.gradle")
-          text = path.read_text()
-
-          signing = """
-              signingConfigs {
-                  release {
-                      storeFile file("scamradar-release.jks")
-                      storePassword System.getenv("KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("KEY_ALIAS")
-                      keyPassword System.getenv("KEY_PASSWORD")
-                  }
-              }
-          """
-
-          if "signingConfigs {" not in text:
-              text = text.replace("android {", "android {\n" + signing, 1)
-
-          if "signingConfig signingConfigs.release" not in text:
-              pattern = r"(buildTypes\s*\{\s*release\s*\{)"
-              text, count = re.subn(
-                  pattern,
-                  r"\1\n            signingConfig signingConfigs.release",
-                  text,
-                  count=1
-              )
-              if count != 1:
-                  raise SystemExit("Could not find release build type")
-
-          path.write_text(text)
-          PY
-
-      - name: Build signed APK
+      - name: Build debug APK
         working-directory: android
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.SCAMRADAR_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.SCAMRADAR_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.SCAMRADAR_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease
-
-      - name: Verify APK signature
-        run: |
-          APK="android/app/build/outputs/apk/release/app-release.apk"
-          test -s "$APK"
-          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)
-          test -n "$APKSIGNER"
-          "$APKSIGNER" verify "$APK"
+          ./gradlew assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: ScamRadar-Next-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish separate ScamRadar Next release
+      - name: Publish ScamRadar Next APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk ScamRadar-Next.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk ScamRadar-Next.apk
           if ! gh release view apk-next >/dev/null 2>&1; then
             gh release create apk-next \
               --title "ScamRadar Next APK" \
-              --notes "Signed ScamRadar Next Android build." \
+              --notes "Test build of ScamRadar Next." \
               --target "$GITHUB_SHA" \
               --prerelease
           fi
           gh release edit apk-next \
-            --notes "Signed build #${{ github.run_number }} — commit ${GITHUB_SHA::7}"
+            --notes "Test build #${{ github.run_number }} — commit ${GITHUB_SHA::7}"
           gh release upload apk-next ScamRadar-Next.apk --clobber
+
