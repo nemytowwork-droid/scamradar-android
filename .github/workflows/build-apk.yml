@@ -35,10 +35,10 @@ jobs:
           KEY_ALIAS: ${{ secrets.SCAMRADAR_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.SCAMRADAR_KEY_PASSWORD }}
         run: |
-          test -n "$KEYSTORE_BASE64" || (echo "Missing SCAMRADAR_KEYSTORE_BASE64" && exit 1)
-          test -n "$KEYSTORE_PASSWORD" || (echo "Missing SCAMRADAR_KEYSTORE_PASSWORD" && exit 1)
-          test -n "$KEY_ALIAS" || (echo "Missing SCAMRADAR_KEY_ALIAS" && exit 1)
-          test -n "$KEY_PASSWORD" || (echo "Missing SCAMRADAR_KEY_PASSWORD" && exit 1)
+          test -n "$KEYSTORE_BASE64" || (echo "Missing keystore secret" && exit 1)
+          test -n "$KEYSTORE_PASSWORD" || (echo "Missing store password" && exit 1)
+          test -n "$KEY_ALIAS" || (echo "Missing key alias" && exit 1)
+          test -n "$KEY_PASSWORD" || (echo "Missing key password" && exit 1)
 
       - name: Install dependencies
         run: npm install
@@ -57,18 +57,15 @@ jobs:
           test -s android/app/scamradar-release.jks
 
       - name: Configure release signing
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.SCAMRADAR_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.SCAMRADAR_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.SCAMRADAR_KEY_PASSWORD }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path("android/app/build.gradle")
           text = path.read_text()
 
-          signing = '''
+          signing = """
               signingConfigs {
                   release {
                       storeFile file("scamradar-release.jks")
@@ -77,20 +74,21 @@ jobs:
                       keyPassword System.getenv("KEY_PASSWORD")
                   }
               }
-          '''
+          """
 
           if "signingConfigs {" not in text:
-              text = text.replace("android {", "android {\\n" + signing, 1)
+              text = text.replace("android {", "android {\n" + signing, 1)
 
           if "signingConfig signingConfigs.release" not in text:
-              marker = "buildTypes {"
-              if marker not in text:
-                  raise SystemExit("Could not find buildTypes in build.gradle")
-              text = text.replace(
-                  marker,
-                  marker + '\\n        release {\\n            signingConfig signingConfigs.release\\n        }',
-                  1
+              pattern = r"(buildTypes\s*\{\s*release\s*\{)"
+              text, count = re.subn(
+                  pattern,
+                  r"\1\n            signingConfig signingConfigs.release",
+                  text,
+                  count=1
               )
+              if count != 1:
+                  raise SystemExit("Could not find release build type")
 
           path.write_text(text)
           PY
