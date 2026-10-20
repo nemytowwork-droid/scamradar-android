@@ -1,36 +1,35 @@
-<!doctype html>
 <html lang="ru">
-<head>
+<голова>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07110d">
+<meta name="theme-color" content 07110d">
 <title>ScamRadar</title>
 <style>
 :root{color-scheme:dark;--green:#83ffb0;--muted:#a4b6aa}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at top,#163324,#07110d 55%);color:#f3fff7;font:16px system-ui,sans-serif}
-#chainBg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+#chainBg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 main{position:relative;z-index:1;max-width:720px;margin:auto;padding:24px 16px 40px}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:48px;height:48px;border:1px solid #316c4b;border-radius:15px;display:grid;place-items:center;color:var(--green);font-size:28px}
 .eyebrow{font-size:11px;letter-spacing:2px;color:var(--green);font-weight:800}
-h1{margin:2px 0;font-size:23px}h2{font-size:30px;line-height:1.1}
-h3{margin-top:0}
+h1{margin:2px 0;font-size:23px}
+h2{font-size:30px;line-height:1.1}
 .muted,.notice{color:var(--muted);font-size:13px;line-height:1.55}
 .hero{margin:32px 0 20px}
-.panel{background:linear-gradient(145deg,rgba(18,37,26,.94),rgba(12,23,17,.94));border:1px solid #20372b;border-radius:20px;padding:18px;margin:14px 0}
+.panel{background:linear-gradient(145deg,rgba(18,37,26,.9),rgba(12,23,17,.9));border:1px solid #20372b;border-radius:20px;padding:18px;margin:14px 0}
 label{display:block;font-size:13px;margin-bottom:9px}
 input{width:100%;background:#07120c;color:white;border:1px solid #2c4937;border-radius:12px;padding:15px;font:inherit}
-button{border:0;border-radius:12px;padding:13px 14px;font:700 14px system-ui;cursor:pointer}
-button:disabled{opacity:.55;cursor:wait}
+button{border:0;border-radius:12px;padding:14px;font:700 15px system-ui;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
 .primary{background:var(--green);color:#062012;width:100%;margin-top:12px}
-.secondary{background:#193323;color:var(--green);border:1px solid #326348;width:100%;margin-top:10px}
-.smallbtn{padding:10px 12px;margin:0;width:auto}
+.secondary{background:#193323;color:var(--green);border:1px solid #326348;width:100%;margin-top:12px}
 .chip{display:inline-block;font-size:12px;border:1px solid #2c4535;border-radius:99px;padding:7px 10px;margin:10px 5px 0 0;color:#c4d5ca}
 .result{display:none;overflow-wrap:anywhere}
 .item,.feature{padding:12px 0;border-bottom:1px solid #20352a;overflow-wrap:anywhere}
 .item:last-child,.feature:last-child{border:0}
-.feature strong{display:block}.feature span{font-size:12px;color:var(--muted)}
+.feature strong{display:block}
+.feature span{font-size:12px;color:var(--muted)}
 .status{border:1px solid #326348;border-radius:12px;padding:12px;margin:12px 0;color:var(--green);overflow-wrap:anywhere}
 .footer{text-align:center;color:#82988a;font-size:11px;padding:16px}
 .risk-card{border-color:#365d47;background:linear-gradient(145deg,rgba(20,43,29,.92),rgba(11,23,16,.92))}
@@ -52,20 +51,15 @@ button:disabled{opacity:.55;cursor:wait}
 .verdict.v-mid .v-title{color:#ffe08f}
 .verdict.v-unknown{border-color:#6c7f73;background:rgba(164,182,170,.08)}
 .verdict.v-unknown .v-title{color:#d5e2da}
-.warning{border:1px solid #ff9a52;background:rgba(255,154,82,.09);border-radius:12px;padding:12px;margin:12px 0;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
-.good{border-color:#326348;background:rgba(131,255,176,.06)}
-.two{display:grid;grid-template-columns:1fr;gap:10px}
-@media(min-width:520px){.two{grid-template-columns:1fr 1fr}}
-button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 </style>
 </head>
-<body>
+<тело>
 <canvas id="chainBg" aria-hidden="true"></canvas>
-<main>
+<главное>
 <header class="brand">
   <div class="logo">⌁</div>
   <div>
-    <div class="eyebrow">CRYPTO SECURITY</div>
+    <div class="eyebrow">Криптобезопасность</div>
     <h1>ScamRadar</h1>
     <div class="muted">Проверяй. Анализируй. Защищайся.</div>
   </div>
@@ -73,113 +67,104 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-
 
 <section class="hero">
   <div class="eyebrow">БЛОКЧЕЙН-ПРОВЕРКА</div>
-  <h2>Проверь адрес,<br>прежде чем доверять ему.</h2>
-  <p class="muted">ScamRadar изучает доступные публичные данные и AML-сигналы. Проверка помогает заметить некоторые риски, но не гарантирует безопасность.</p>
+  <h2>Проверьте адрес,<br>прежде чем доверять ему.</h2>
+  <p class="muted">ScamRadar недавно обнаружил общедоступные данные криптоадреса и ищет доступные признаки угрозы. Результат поможет внимательнее оценить адрес, но не гарантирует безопасность.</p>
 </section>
 
 <section class="panel">
-  <label for="target">Криптоадрес для проверки</label>
-  <input id="target" placeholder="Вставь BTC, 0x... или T..." autocomplete="off" spellcheck="false" autocapitalize="off">
-  <div>
-    <span class="chip">Bitcoin</span><span class="chip">Ethereum</span><span class="chip">Tron</span><span class="chip">USDT</span>
-  </div>
-  <div class="two" style="margin-top:10px">
-    <button class="secondary smallbtn" id="paste">Вставить из буфера</button>
-    <button class="secondary smallbtn" id="clearInput">Очистить поле</button>
-  </div>
-  <button class="primary" id="check">⌕ Проверить адрес</button>
-  <p class="notice">Вводи только публичный адрес. Не вводи seed-фразу, пароль или приватный ключ. Адрес передаётся сторонним API-сервисам для проверки.</p>
-</section>
-
-<section class="panel">
-  <h3>Сравнить два адреса</h3>
-  <p class="muted">Вставь адрес, полученный от отправителя, и адрес, который тебе дали для перевода. Сравнение выполняется на устройстве и не отправляет эти адреса в API.</p>
-  <label for="compareA">Первый адрес</label>
-  <input id="compareA" placeholder="Первый адрес" autocomplete="off" spellcheck="false" autocapitalize="off">
-  <label for="compareB" style="margin-top:12px">Второй адрес</label>
-  <input id="compareB" placeholder="Адрес для сравнения" autocomplete="off" spellcheck="false" autocapitalize="off">
-  <button class="secondary" id="compare">Сравнить адреса</button>
-  <div id="compareResult" class="notice" style="margin-top:12px"></div>
+  <label for="target">Биткойн, Ethereum или Tron-адрес</label>
+  <input id="target" Placeholder="Вставьте BTC, 0x... или T..." autocomplete="off" Spellcheck="false">
+  <div><span class="chip">Биткойн</span><span class="chip">Эфириум</span><span class="chip">Трон</span><span class="chip">USDT</span></div>
+  <button class="primary" id="check">⌕ Посмотреть адрес</button>
+  <p class="notice">Вводятся только публичный адрес. Не вводите сид-фразу, пароль или приватный ключ. Адрес передаётся внешним API-сервисам для проверок.</p>
 </section>
 
 <section class="panel result" id="result">
   <div class="eyebrow">ОТЧЁТ ПРОВЕРКИ</div>
   <h3 id="name"></h3>
   <div id="status" class="status"></div>
-  <div id="similarWarning"></div>
+
   <div id="verdict" class="verdict">
     <div class="v-title" id="vTitle"></div>
     <div class="v-text" id="vText"></div>
   </div>
 
   <div class="panel risk-card" id="riskCard" hidden>
-    <div class="eyebrow">ИНДЕКС РИСКА SCAMRADAR</div>
+    <div class="eyebrow">ИНДЕКС РИСКА СКАМРАДАР</div>
     <div class="risk-top">
       <div>
-        <div class="muted">Сила найденных тревожных сигналов</div>
+        <div class="muted">Насколько серьёзны обнаруженные сигналы</div>
         <div class="risk-number" id="riskNumber">—/100</div>
       </div>
       <span class="risk-pill" id="riskLabel">Недостаточно данных</span>
     </div>
     <div class="risk-track"><div class="risk-fill" id="riskFill"></div></div>
-    <div class="muted" id="confidenceText">Полнота данных: не определена</div>
+    <div class="muted" id="confidenceText">Полные данные: не определено</div>
     <p class="risk-note" id="riskExplanation"></p>
-    <p class="risk-note"><strong>Важно:</strong> индекс — это шкала найденных AML-сигналов, а не вероятность мошенничества. Баланс и количество транзакций сами по себе индекс не повышают. Отсутствие меток не означает безопасность.</p>
+    <p class="risk-note"><strong>Важно:</strong> индекс — это найденные сигналы, а не защита от мошенничества. Низкий индекс не гарантирует безопасность. Если меток нет, это ещё не значит, что адрес безопасен.</p>
   </div>
+
   <div id="details"></div>
-  <div class="two">
-    <button class="secondary" id="copy">Копировать отчёт</button>
-    <button class="secondary" id="share">Поделиться отчётом</button>
-  </div>
+  <button class="вторичный" id="copy">Копировать отчёт</button>
 </section>
 
 <section class="panel">
-  <h3>Что проверяет ScamRadar</h3>
-  <div class="feature">◈ <strong>Bitcoin</strong><span>Баланс, подтверждённые и неподтверждённые транзакции через Blockstream.</span></div>
-  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс ETH и USDT ERC-20, число транзакций и тип адреса через Blockscout.</span></div>
-  <div class="feature">◇ <strong>Tron и USDT</strong><span>Баланс TRX, USDT TRC-20 и доступные даты активности через TronGrid.</span></div>
-  <div class="feature">◎ <strong>AML-сигналы</strong><span>Метки стороннего сервиса, если он вернул их для адреса.</span></div>
-  <div class="feature">◉ <strong>История</strong><span>Последние восемь проверок хранятся локально на устройстве.</span></div>
+  <h3>Что такое ScamRadar</h3>
+  <div class="feature">◈ <strong>Биткойн</strong><span>Баланс и статистика транзакций через Blockstream.</span></div>
+  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс ETH и USDT, количество транзакций и тип адреса через Blockscout.</span></div>
+  <div class="feature">◇ <strong>Tron и USDT</strong><span>Баланс TRX и USDT (TRC-20), дата активности адреса через TronGrid.</span></div>
+  <div class="feature">◎ <strong>AML-сигналы</strong><span>Метки сторонних услуг, если он их обеспечивает.</span></div>
+  <div class="feature">◉ <strong>История</strong><span>Последние восемь показаний включения устройства.</span></div>
 </section>
 
 <section class="panel">
   <h3>Недавние проверки</h3>
   <div id="history" class="notice">Пока проверок нет.</div>
-  <button class="secondary" id="clear">Очистить историю</button>
+  <button class="вторичный" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20f</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 20 октября 2026 г.</div>
 </main>
 
 <script>
 'use strict';
 
 const $ = id => document.getElementById(id);
+
 const TRON_USDT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
 const ETH_USDT = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-const AML_URL = 'https://aged-shadow-c96e.nemytow.workers.dev/';
 const AML_TIMEOUT_MS = 30000;
 
 let history = [];
 let lastVerdict = '';
-let lastReportText = '';
 let currentReport = {
-  address: null, chain: null, txCount: null, hasHistory: false,
-  onchain: false, aml: null, error: null, activityDate: null
+  цепочка: null,
+  txCount: null,
+  hasHistory: false,
+  onchain: false,
+  aml: null
 };
 
-try {
+пытаться {
   const saved = JSON.parse(localStorage.getItem('sr-history') || '[]');
-  if (Array.isArray(saved)) history = saved.filter(x => typeof x === 'string').slice(0, 8);
-} catch (e) { history = []; }
+  if (Array.isArray(saved)) {
+    история = сохранено.фильтр(x => тип x === 'string').срез(0, 8);
+  }
+} catch (e) {
+  история = [];
+}
 
-function esc(value) {
+функция esc(value) {
   return String(value).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    '&': '&',
+    '<': '<',
+    '>': '>',
+    '"': '"',
+    "'": '''
   })[c]);
 }
 
-function draw() {
+функция draw() {
   $('history').innerHTML = history.length
     ? history.map(x => '<div class="item">' + esc(x) + '</div>').join('')
     : 'Пока проверок нет.';
@@ -188,773 +173,1202 @@ function draw() {
 function addDetail(label, value) {
   const div = document.createElement('div');
   div.className = 'item';
+
   const strong = document.createElement('strong');
   strong.textContent = label;
+
   const p = document.createElement('p');
   p.className = 'notice';
   p.textContent = String(value);
+
   div.append(strong, p);
   $('details').append(div);
 }
 
 function saveHistory(value) {
   history.unshift(value);
-  history = [...new Set(history)].slice(0, 8);
-  try { localStorage.setItem('sr-history', JSON.stringify(history)); } catch (e) {}
-  draw();
+  история = [...new Set(history)].slice(0, 8);
+
+  пытаться {
+    localStorage.setItem('sr-history', JSON.stringify(history));
+  } catch (e) {}
+
+  рисовать();
 }
 
-function formatBtc(sats) {
-  return (Number(sats) / 1e8).toLocaleString('ru-RU', {maximumFractionDigits:8}) + ' BTC';
+функция formatBtc(sats) {
+  return (Number(sats) / 100000000)
+    .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
 }
 
 function formatDate(ms) {
   const n = Number(ms);
   if (!Number.isFinite(n) || n <= 0) return null;
+
   const d = new Date(n);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('ru-RU', {year:'numeric',month:'long',day:'numeric'});
+
+  return d.toLocaleDateString('ru-RU', {
+    год: 'числовой',
+    месяц: 'долгий',
+    день: 'числовой'
+  });
 }
 
-function formatAge(ms) {
+функция formatAge(ms) {
   const n = Number(ms);
   if (!Number.isFinite(n) || n <= 0) return '';
+
   const days = Math.floor((Date.now() - n) / 86400000);
-  if (days < 0) return '';
-  if (days < 1) return ' (сегодня)';
-  if (days < 60) return ' (' + days + ' дн. назад)';
+  если (дней < 0) вернуть '';
+  if (days < 1) return '(создан сегодня)';
+  if (дней < 60) вернуть '(' + дней + 'дн. назад)';
+
   const months = Math.floor(days / 30);
-  if (months < 24) return ' (около ' + months + ' мес. назад)';
-  return ' (около ' + Math.floor(days / 365) + ' лет назад)';
+  if (месяцев < 24) return '(около ' + месяцев + ' мес. назад)';
+
+  return '(около' + Math.floor(days/365) + 'лет назад)';
 }
 
 function isTrueFlag(value) {
-  return value === true || value === 1 ||
-    (typeof value === 'string' && ['true','1','yes'].includes(value.trim().toLowerCase()));
+  возвращаемое значение === true ||
+    значение === 1 ||
+    (typeof value === 'string' &&
+      ['true', '1', 'yes'].includes(value.trim().toLowerCase()));
 }
 
-function detectChain(address) {
-  const v = String(address || '').trim();
-  if (/^(1[1-9A-HJ-NP-Za-km-z]{25,34}|3[1-9A-HJ-NP-Za-km-z]{25,34}|bc1[a-z0-9]{11,71})$/i.test(v)) return 'BTC';
-  if (/^0x[a-fA-F0-9]{40}$/.test(v)) return 'ETH';
-  if (/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(v)) return 'TRON';
-  return null;
-}
+// Запрос к публичному API индикатора: тайм-аут 15 секунд и одна повторная попытка.
+асинхронная функция getJson(url, serviceName) {
+  let lastError = null;
 
-function levenshtein(a, b, limit) {
-  if (Math.abs(a.length - b.length) > limit) return limit + 1;
-  let prev = Array.from({length:b.length + 1}, (_,i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    let rowMin = i;
-    for (let j = 1; j <= b.length; j++) {
-      cur[j] = Math.min(cur[j-1] + 1, prev[j] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1));
-      rowMin = Math.min(rowMin, cur[j]);
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let retryable = true;
+
+    пытаться {
+      const response = await fetch(url, { signal: controller.signal });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      retryable = response.status === 429 || response.status >= 500;
+      lastError = new Error(serviceName + ' вернул HTTP ' + response.status);
+    } catch (e) {
+      if (e && e.name === 'AbortError') {
+        LastError = новая ошибка(serviceName + 'не ответили в течение 15 секунд.');
+      } еще {
+        lastError = new Error(
+          'Не удалось соединиться с' + serviceName +
+          '. Сервис мог временно отказать из-за большого количества запросов. Повтори проверку через минуту.'
+        );
+      }
+    } окончательно {
+      clearTimeout(timer);
     }
-    if (rowMin > limit) return limit + 1;
-    prev = cur;
-  }
-  return prev[b.length];
-}
 
-function findSimilarHistory(address) {
-  const chain = detectChain(address);
-  if (!chain) return [];
-  const found = [];
-  for (const old of history) {
-    if (old === address || detectChain(old) !== chain) continue;
-    const distance = levenshtein(address.toLowerCase(), old.toLowerCase(), 2);
-    if (distance > 0 && distance <= 2) found.push({address:old,distance});
-  }
-  return found.slice(0, 3);
-}
+    if (!retryable || attempt === 2) {
+      перерыв;
+    }
 
-function showSimilarWarning(address) {
-  const box = $('similarWarning');
-  box.replaceChildren();
-  const matches = findSimilarHistory(address);
-  if (!matches.length) return;
-  const div = document.createElement('div');
-  div.className = 'warning';
-  const strong = document.createElement('strong');
-  strong.textContent = 'Внимание: адрес похож на адрес из истории!';
-  div.append(strong);
-  const p = document.createElement('p');
-  p.textContent = 'Обнаружено очень близкое совпадение. Это может быть опечатка или подмена адреса. Сравни каждый символ с первоначальным источником перед переводом.';
-  div.append(p);
-  matches.forEach(m => {
-    const row = document.createElement('p');
-    row.textContent = 'Похожий адрес (' + m.distance + ' отличий): ' + m.address;
-    div.append(row);
-  });
-  box.append(div);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+
+  throw lastError;
 }
 
 function explainCategory(category) {
   const key = String(category || '').trim().toLowerCase();
+
   const explanations = {
-    ransomware:'Метка связана с программами-вымогателями. Проверь источник и контекст.',
-    'file-locker':'Метка может быть связана с программами, блокирующими доступ к файлам ради выкупа.',
-    burn:'Эта метка может обозначать адрес сжигания активов. Она сама по себе не означает мошенничество.',
-    cex:'Эта категория обычно связана с централизованной криптобиржей и не доказывает безопасность адреса.',
-    phishing:'Метка связана с возможным фишингом — попыткой обманом получить данные или средства.',
-    scam:'Поставщик связал адрес с возможным мошенничеством. Проверь источник и контекст.',
-    fraud:'Поставщик связал адрес с возможным обманом. Информация требует дополнительной проверки.',
-    individual:'Поставщик классифицировал адрес как связанный с физическим лицом. Это не подтверждает личность владельца.',
-    exchange:'Категория может указывать на связь с биржей. Она не доказывает безопасность адреса.'
+    программы-вымогатели: «Эта метка связана с программами-вымогателями. Это серьезная проверка причины и обстоятельств, но одна метка сама по себе не является окончательным доказательством.',
+    'file-locker': 'Эта метка может быть связана с программами, блокирующими доступ к файлам, радикально выкупленным. Необходимо проверить источник метки.',
+    Burn: «Эта метка может обозначать направление сжигания активов». Она сама по себе не означает мошенничество.',
+    cex: «Эта категория обычно связана с централизованной криптобиржей. Она не доказывает, что кому принадлежит адрес и он в безопасности.',
+    фишинг: 'Эта метка озабочена возможным фишингом — попыткой обмана получить данные или средства.',
+    мошенничество: «Поставщик связал адрес с возможным мошенничеством. Перед выводами важно перепроверить источник и контекст.',
+    мошенничество: 'Поставщик связал адрес с возможным обманом. Эта информация требует прохождения проверки.',
+    физическое лицо: 'Поставщик классифицировал адрес как связанный с физическим лицом. Это не подтверждение личности и не говорит о безопасности адреса.',
+    обмен: «Эта категория может проявляться на адресе связи с биржей. Она не доказывает, кому принадлежит адрес и что он в безопасности.
   };
-  return explanations[key] || 'Это категория стороннего сервиса. Точный смысл зависит от методики поставщика. Одна метка не является окончательным доказательством.';
+
+  return explanations[key] ||
+    'Это категория сторонних услуг. Ее смысл зависит от методики поставщика. Одна метка не является окончательным доказательством.';
 }
 
 function calculateRisk(entity) {
-  if (!entity) return {score:null,reasons:['AML-сервис не предоставил классификационные данные.'],insufficient:true};
+  если (!entity) {
+    возвращаться {
+      оценка: null,
+      причины: ['Нет доступных данных AML для оценки риска.'],
+      недостаточно: верно
+    };
+  }
+
   const category = String(entity.category || '').trim().toLowerCase();
   const label = String(entity.label || '').trim().toLowerCase();
   const combined = category + ' ' + label;
+
   if (category === 'burn' || label === 'burn') {
-    return {score:null,kind:'burn',reasons:['Сервис обозначил адрес как burn — возможный адрес сжигания активов. Это само по себе не указывает на мошенничество.'],insufficient:true};
+    возвращаться {
+      оценка: null,
+      вид: 'ожог',
+      причины: [
+        «AML-сервис отбеливания адресов как сжигание — возможный адрес сжигания активов». Эта метка сама по себе не указывает на мошенничество. Данных для числовой оценки риска недостаточно.
+      ],
+      недостаточно: верно
+    };
   }
+
   const rules = [
-    {words:['sanction','sanctioned','санкц'],score:90,reason:'Найдена метка, связанная с санкциями. Проверь первоисточник и точность совпадения.'},
-    {words:['terrorism','terrorist','терроризм','террорист'],score:90,reason:'Найдена метка, связанная с терроризмом. Требуется независимая проверка.'},
-    {words:['ransomware','file-locker','file locker'],score:80,reason:'Найдена метка, связанная с программами-вымогателями.'},
-    {words:['phishing','фишинг'],score:80,reason:'Найдена метка, связанная с фишингом.'},
-    {words:['scam','fraud','мошен'],score:75,reason:'Найдена метка, связанная с возможным мошенничеством.'},
-    {words:['stolen','stolen funds','theft','hack','exploit','краден','краж'],score:70,reason:'Найдена метка, связанная с кражей средств или взломом.'},
-    {words:['malware','вредонос'],score:65,reason:'Найдена метка, связанная с вредоносным программным обеспечением.'},
-    {words:['darknet','dark web'],score:55,reason:'Найдена метка, связанная с darknet. Необходимо проверить контекст.'},
-    {words:['mixer','tumbler','mixing service'],score:35,reason:'Найдена метка сервиса смешивания транзакций. Это само по себе не доказывает незаконную деятельность.'}
+    {
+      слова: ['санкция', 'санкционированный', 'санкц'],
+      оценка: 90,
+      Причина: «Найдена метка, связанная с санкциями. Необходимо проверить первоисточник и точность совпадения».
+    },
+    {
+      слова: ['терроризм', 'террорист', 'терроризм', 'террорист'],
+      оценка: 90,
+      причина: 'Найдена метка, связанная с терроризмом. Требуется независимая проверка.
+    },
+    {
+      слова: ['ransomware', 'file-locker', 'file locker'],
+      оценка: 80,
+      причина: 'Найдена метка, связанная с программами-вымогателями.'
+    },
+    {
+      слова: ['фишинг', 'рыбалка'],
+      оценка: 80,
+      причина: «Найдена метка, связанная с фишингом».
+    },
+    {
+      слова: ['афера', 'мошенничество', 'мошен'],
+      Оценка: 75,
+      причина: «Найдена метка, связанная с возможным мошенничеством».
+    },
+    {
+      слова: ['украдено', 'украденные средства', 'кража', 'взломать', 'эксплуатировать', 'краден', 'краж'],
+      оценка: 70,
+      причина: «Найдена метка, связанная с кражей средств или взломом».
+    },
+    {
+      слова: ['вредоносное ПО', 'вредонос'],
+      Оценка: 65,
+      причина: «Найдена метка, связанная с конкурентным программным обеспечением».
+    },
+    {
+      слова: ['darknet', 'dark web'],
+      Оценка: 55,
+      причина: «Найдена метка, связанная с даркнетом. Необходимо проверить контекст».
+    },
+    {
+      слова: ['миксер', 'стакан', 'сервис смешивания'],
+      Оценка: 35,
+      причина: «Найдена метка сервиса транзакций. Она сама по себе не доказывает незаконную деятельность».
+    }
   ];
-  let score = 0;
+
+  пусть оценка = 0;
   const reasons = [];
+
   for (const rule of rules) {
     if (rule.words.some(word => combined.includes(word))) {
       score = Math.max(score, rule.score);
       reasons.push(rule.reason);
     }
   }
+
   if (isTrueFlag(entity.sanctioned)) {
-    score = Math.max(score,95);
-    reasons.push('AML-сервис указал санкционную отметку. Её необходимо независимо перепроверить.');
+    score = Math.max(score, 95);
+    reasons.push(
+      «AML-сервис сформировал санкционную отметку. Ее необходимо независимо перепроверить.
+    );
   }
-  if (!reasons.length) {
-    return {score:null,reasons:['В доступных метках нет совпадений с правилами риска ScamRadar. Это не доказывает безопасность адреса.'],insufficient:true};
+
+  if (reasons.length === 0) {
+    возвращаться {
+      оценка: null,
+      причины: [
+        'В доступных метках не обнаружено совпадений с сертификатом ScamRadar. Этого достаточно, чтобы утверждать, что адрес безопасен».
+      ],
+      недостаточно: верно
+    };
   }
-  return {score:Math.max(0,Math.min(100,score)),reasons,insufficient:false};
+
+  возвращаться {
+    score: Math.max(0, Math.min(100, score)),
+    причины,
+    недостаточно: ложно
+  };
 }
 
-function setVerdict(level,title,text) {
+function setVerdict(level, title, text) {
   const box = $('verdict');
   box.className = 'verdict v-' + level;
   box.style.display = 'block';
-  $('vTitle').textContent = title;
-  $('vText').textContent = text;
+  $('vTitle').textContent = заголовок;
+  $('vText').textContent = текст;
   lastVerdict = title + '. ' + text;
 }
 
-function entityLabelText(entity) {
+функция entityLabelText(entity) {
   const parts = [];
+
   if (entity && entity.label) parts.push(String(entity.label));
   if (entity && entity.category) parts.push(String(entity.category));
+
   return parts.join(' / ');
 }
 
-function showVerdict(entity,risk,amlState) {
-  if (amlState === 'unavailable') {
-    setVerdict('unknown','AML-проверка недоступна',
-      'Сервис меток риска не ответил или вернул ошибку. Риск неизвестен. Это не означает, что адрес безопасен. Можно повторить проверку позже.');
-    return;
+function showVerdict(entity, risk) {
+  если (!entity) {
+    setVerdict(
+      'неизвестный',
+      «Не удалось проверить метки риска»,
+      «Данные конденсатора получены, но AML-сервис сейчас недоступен или не вернул запись. Риск неизвестен, и это не означает, что адрес безопасен. Повторите проверку позже.
+    );
+    возвращаться;
   }
-  if (amlState === 'no_record') {
-    setVerdict('unknown','AML-сервис не нашёл запись',
-      'Сервис не вернул запись с классификацией для этого адреса. Это не то же самое, что подтверждённая безопасность: данные могут быть неполными.');
-    return;
-  }
-  if (!entity) {
-    setVerdict('unknown','Недостаточно данных для вывода',
-      'Нет пригодных данных для оценки AML-риска. Не считай это подтверждением безопасности.');
-    return;
-  }
+
   const labelText = entityLabelText(entity);
+
   if (!risk || risk.insufficient || risk.score === null) {
     if (risk && risk.kind === 'burn') {
-      setVerdict('unknown','Адрес отмечен как burn',
-        'Сервис обозначил адрес как адрес сжигания активов. Эта метка сама по себе не указывает на мошенничество и не является оценкой безопасности.');
-    } else {
-      setVerdict('unknown','Тревожных меток по правилам ScamRadar не найдено',
+      setVerdict(
+        'никто',
+        «Похоже на адресное сжигание активов»,
+        'Сервис пометил адрес как записать. Сама по себе эта метка не указывает на мошенничество. Это не гарантия безопасности, проверьте контекст.
+      );
+    } еще {
+      setVerdict(
+        'никто',
+        «Меток риска не найден»,
         (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
-        'Доступных сигналов недостаточно для числового индекса. Отсутствие меток не означает, что адрес безопасен.');
+        «Это не гарантия безопасности. Перед переводом перепроверьте получателя другим способом и убеждениями, что адрес правильный».
+      );
     }
-    return;
+    возвращаться;
   }
-  const tail = (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
-    'Индекс ScamRadar: ' + risk.score + '/100. Метка не является окончательным доказательством.';
+
+  const tail =
+    (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
+    'Индекс ScamRadar:' + Risk.score + '/100. Метка не является окончательным доказательством, но это повод проверить адрес.';
+
   if (risk.score >= 75) {
-    setVerdict('crit','Высокий уровень тревожных сигналов',
-      'Не отправляй средства, пока не проверишь адрес независимо. ' + tail);
+    setVerdict(
+      'крит',
+      'Высокий риск: найдены тревожные метки',
+      «Не отправляй средства, пока не проверишь адрес независимо. ' + хвост
+    );
   } else if (risk.score >= 50) {
-    setVerdict('high','Повышенный уровень тревожных сигналов',
-      'Будь осторожен и перепроверь получателя перед переводом. ' + tail);
+    setVerdict(
+      'высокий',
+      «Повышенный риск: есть серьезные сигналы»,
+      «Будь осторожен и перепроверь получателя перед переводом. ' + хвост
+    );
   } else if (risk.score >= 20) {
-    setVerdict('mid','Есть сигналы, требующие внимания',
-      'Дополнительно проверь адрес и источник метки. ' + tail);
-  } else {
-    setVerdict('mid','Найдены слабые сигналы',
-      'Проверь контекст и источник классификации. ' + tail);
+    setVerdict(
+      'середина',
+      «Есть сигналы риска»,
+      «Стоит внимательно проверить адрес перед переводом. ' + хвост
+    );
+  } еще {
+    setVerdict(
+      'низкий',
+      'Найдены слабые сигналы',
+      хвост
+    );
   }
 }
 
 function renderRiskIndex() {
   $('riskCard').hidden = false;
+
   const aml = currentReport.aml;
   const entity = aml && aml.available ? aml.entity : null;
-  const amlState = !aml ? 'unavailable' :
-    aml.available ? 'found' :
-    aml.noRecord ? 'no_record' : 'unavailable';
-  const quality = [];
-  let completeness = 0;
+  const qualityParts = [];
+  Пусть уверенность равна 0;
+
   if (currentReport.onchain) {
-    completeness += 45;
-    quality.push('данные блокчейна получены');
+    уверенность += 45;
+    qualityParts.push('данные денежные средства получены');
   }
+
   if (currentReport.hasHistory) {
-    completeness += 15;
-    quality.push('есть признаки истории адреса');
+    уверенность += 15;
+    qualityParts.push('история адреса доступна');
   }
-  if (aml && aml.available) {
-    completeness += 25;
-    quality.push('AML-сервис ответил');
-    if (entity && (entity.category || entity.label || entity.sanctioned !== undefined)) {
-      completeness += 15;
-      quality.push('получены классификационные данные');
+
+  если (сущность) {
+    уверенность += 25;
+    qualityParts.push('ответ AML-сервис получен');
+
+    if (entity.category || entity.label || entity.sanctioned !== undefined) {
+      уверенность += 15;
+      qualityParts.push('есть классификационные AML-данные');
     }
-  } else if (aml && aml.noRecord) {
-    completeness += 10;
-    quality.push('AML-сервис ответил, но запись не найдена');
   }
-  completeness = Math.min(100,completeness);
-  const confLabel = completeness >= 80 ? 'Высокая' : completeness >= 55 ? 'Средняя' : 'Низкая';
-  $('confidenceText').textContent = 'Полнота данных: ' + confLabel + ' (' + completeness +
-    '/100). ' + (quality.join('; ') || 'Недостаточно проверенных источников') + '.';
+
+  confidence = Math.min(100, confidence);
+
+  const confidenceLabel = confidence >= 80
+    ? 'Высокая полнота'
+    : уверенность >= 55
+      ? 'Средняя полнота'
+      : 'Низкая полнота';
+
+  $('confidenceText').textContent =
+    'Полные данные:' +trustLabel +
+    ' (' + уверенность + '/100). ' +
+    (qualityParts.length
+      ? qualityParts.join('; ') + '.'
+      : 'Недостаточно проверенных источников.');
+
   const risk = calculateRisk(entity);
-  showVerdict(entity,risk,amlState);
+
+  showVerdict(entity, risk);
 
   if (!risk || risk.insufficient || risk.score === null) {
     $('riskNumber').textContent = '—/100';
-    $('riskLabel').textContent = amlState === 'unavailable' ? 'AML недоступен' :
-      amlState === 'no_record' ? 'Запись не найдена' : 'Недостаточно сигналов';
+    $('riskLabel').textContent = 'Недостаточно сигналов';
     $('riskFill').style.width = '0%';
     $('riskFill').style.background = 'var(--green)';
-    $('riskExplanation').textContent = risk.reasons.join(' ') +
-      ' Числовой индекс не рассчитан: это не нулевой риск.';
-    addDetail('Индекс риска ScamRadar',
-      'Числовой индекс не рассчитан из-за недостатка пригодных сигналов. Это не означает нулевой риск.');
-    addDetail('Полнота данных',
-      completeness + '/100 — ' + confLabel + '. ' +
-      (quality.join('; ') || 'Недостаточно проверенных источников') + '.');
-    return;
+
+    $('riskExplanation').textContent =
+      (риск && риск.причины)
+        ? risk.reasons.join(' ')
+        : 'Не удалось получить приемлемые AML-данные для расчёта.') +
+      'Это не означает, что адрес безопасен.';
+
+    addDetail(
+      «Индекс риска ScamRadar»,
+      'Недостаточно подтверждены сигналы для числовой оценки. Это не нулевой риск.
+    );
+
+    addDetail(
+      'Полнота данных',
+      confidence + '/100 — ' + confidenceLabel + '. ' +
+      (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
+    );
+
+    возвращаться;
   }
 
-  const label = risk.score >= 75 ? 'Критический сигнал' :
-    risk.score >= 50 ? 'Сильный сигнал' :
-    risk.score >= 20 ? 'Умеренный сигнал' : 'Слабый сигнал';
+  пусть будет метка;
+
+  if (risk.score >= 75) {
+    label = 'Критический сигнал';
+  } else if (risk.score >= 50) {
+    label = 'Сильный сигнал';
+  } else if (risk.score >= 20) {
+    label = 'Умеренный сигнал';
+  } еще {
+    label = 'Слабый сигнал';
+  }
+
   $('riskNumber').textContent = risk.score + '/100';
-  $('riskLabel').textContent = label;
+  $('riskLabel').textContent = метка;
   $('riskFill').style.width = risk.score + '%';
-  $('riskFill').style.background = risk.score >= 75 ? '#ff657a' :
+
+  $('riskFill').style.background =
+    risk.score >= 75 ? '#ff657a' :
     risk.score >= 50 ? '#ff9a52' :
-    risk.score >= 20 ? '#ffd166' : 'var(--green)';
-  $('riskExplanation').textContent = risk.reasons.join(' ') +
-    ' Баланс и количество транзакций сами по себе индекс не повышают.';
-  addDetail('Индекс риска ScamRadar',
-    risk.score + '/100 — ' + label + '. ' + risk.reasons.join(' '));
-  addDetail('Полнота данных',
-    completeness + '/100 — ' + confLabel + '. ' +
-    (quality.join('; ') || 'Недостаточно проверенных источников') + '.');
+    risk.score >= 20 ? '#ffd166' :
+    'var(--green)';
+
+  $('riskExplanation').textContent =
+    risk.reasons.join(' ') +
+    Балансы и число транзакций сами по себе не повышают индекс. Оценка внешнего AML-сервиса не является отклонением от мошенничества.';
+
+  addDetail(
+    «Индекс риска ScamRadar»,
+    risk.score + '/100 — ' + label + '. ' + risk.reasons.join(' ')
+  );
+
+  addDetail(
+    'Полнота данных',
+    confidence + '/100 — ' + confidenceLabel + '. ' +
+    (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
+  );
 }
 
-async function getJson(url,serviceName) {
-  let lastError = null;
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(),15000);
-    let retryable = true;
-    try {
-      const response = await fetch(url,{signal:controller.signal});
-      if (response.ok) return await response.json();
-      retryable = response.status === 429 || response.status >= 500;
-      lastError = new Error(serviceName + ' вернул HTTP ' + response.status);
-    } catch (e) {
-      lastError = e && e.name === 'AbortError'
-        ? new Error(serviceName + ' не ответил за 15 секунд.')
-        : new Error('Не удалось соединиться с ' + serviceName +
-          '. Возможно, сервис временно недоступен. Повтори проверку позже.');
-    } finally {
-      clearTimeout(timer);
-    }
-    if (!retryable || attempt === 2) break;
-    await new Promise(resolve => setTimeout(resolve,1200));
-  }
-  throw lastError;
-}
+асинхронная функция checkAml(address, chain) {
+  const statusBefore = $('status').textContent;
 
-async function checkAml(address,chain) {
-  const oldStatus = $('status').textContent;
-  $('status').textContent = oldStatus + ' Проверяем AML-метки…';
-  try {
+  $('status').textContent =
+    statusBefore + 'Проверяем метки риска (для очень активных адресов до 30 секунд)…';
+
+  пытаться {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(),AML_TIMEOUT_MS);
-    let response, responseText;
-    try {
-      response = await fetch(AML_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          addresses:[{wallet_address:address,chain:chain}],
-          include:['aml_score','category','counterparties'],
-          top_n:5
-        }),
-        signal:controller.signal
-      });
+    const timeout = setTimeout(() => controller.abort(), AML_TIMEOUT_MS);
+
+    пусть ответ;
+    let responseText;
+
+    пытаться {
+      response = await fetch(
+        'https://aged-shadow-c96e.nemytowwork.workers.dev/',
+        {
+          метод: 'POST',
+          заголовки: {
+            'Content-Type': 'application/json'
+          },
+          тело: JSON.stringify({
+            адреса: [{
+              wallet_address: адрес,
+              цепь: цепь
+            }],
+            include: ['aml_score', 'category', 'counterparties'],
+            top_n: 5
+          }),
+          сигнал: контроллер.сигнал
+        }
+      );
+
       responseText = await response.text();
-    } finally {
-      clearTimeout(timer);
+    } окончательно {
+      clearTimeout(timeout);
     }
+
     if (!response.ok) {
-      let detail = responseText.slice(0,350);
-      try {
-        const parsed = JSON.parse(responseText);
-        detail = [parsed.error,parsed.detail,parsed.message]
-          .filter(Boolean).map(String).join(' — ') || detail;
+      let errorDetail = responseText.slice(0, 500);
+
+      пытаться {
+        const parsedError = JSON.parse(responseText);
+        const parts = [];
+
+        if (parsedError.error) parts.push(String(parsedError.error));
+        if (parsedError.detail) parts.push(String(parsedError.detail));
+        if (parsedError.message) parts.push(String(parsedError.message));
+
+        if (parsedError.provider_status) {
+          parts.push('код поставщика ' + parsedError.provider_status);
+        }
+
+        if (parsedError.provider_detail) {
+          parts.push(
+            typeof parsedError.provider_detail === 'string'
+              parsedError.provider_detail
+              : JSON.stringify(parsedError.provider_detail).slice(0, 300)
+          );
+        }
+
+        errorDetail = parts.length
+          ? parts.join(' — ')
+          : JSON.stringify(parsedError).slice(0, 500);
       } catch (e) {}
-      throw new Error('AML HTTP ' + response.status + ': ' + detail);
+
+      throw new Error('AML HTTP ' + response.status + ': ' + errorDetail);
     }
-    let data;
-    try { data = JSON.parse(responseText); }
-    catch (e) { throw new Error('AML-сервис вернул некорректный ответ.'); }
+
+    пусть данные;
+
+    пытаться {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(
+        'AML вернул некорректный ответ: ' + responseText.slice(0, 250)
+      );
+    }
 
     const entities = Array.isArray(data.entities) ? data.entities : [];
     const entity = entities[0];
-    if (!entity) {
-      addDetail('AML-сигналы',
-        'AML-сервис ответил, но не вернул классификационную запись для адреса. Риск неизвестен; это не подтверждение безопасности.');
-      return {available:false,noRecord:true,error:'Запись не найдена'};
+
+    если (!entity) {
+      addDetail(
+        'АМЛ-сигналы',
+        'Сервис не вернул запись для адреса. Риск неизвестен. Ответ: ' +
+        JSON.stringify(data).slice(0, 350)
+      );
+
+      возвращаться {
+        доступно: false,
+        ошибка: «AML-сервис не вернул запись»
+      };
     }
 
-    addDetail('Оценка внешнего AML-сервиса',
+    addDetail(
+      'Оценка внешнего AML-сервиса',
       entity.aml_score === undefined || entity.aml_score === null
-        ? 'Внешняя оценка не предоставлена.'
-        : String(entity.aml_score) + ' — оценка поставщика, не процент вероятности мошенничества.');
-    if (entity.label) addDetail('Метка сервиса',String(entity.label));
+        ? «Внешняя оценка не предоставлена».
+        : String(entity.aml_score) +
+          — качество поставщика, а не процент мошенничества.
+    );
+
+    if (entity.label) {
+      addDetail('Метка сервиса', String(entity.label));
+    }
+
     if (entity.category) {
-      addDetail('Категория сервиса',String(entity.category));
-      addDetail('Простое объяснение',explainCategory(entity.category));
+      addDetail('Категория сервиса', String(entity.category));
+      addDetail('Простое объяснение', объясненияКатегория(entity.category));
     }
+
     if (entity.sanctioned !== undefined && entity.sanctioned !== null) {
-      addDetail('Санкционная отметка',isTrueFlag(entity.sanctioned)
-        ? 'Сервис указывает такую отметку. Проверь первоисточник.'
-        : 'Сервис не указал такую отметку. Это не гарантирует отсутствие санкционных рисков.');
+      addDetail(
+        'Санкционная отметка',
+        isTrueFlag(entity.sanctioned)
+          ? 'Сервис указывает такую ​​отметку. Необходимо проверить первоисточник».
+          : 'Сервис не формирует такую ​​отметку. Это не гарантирует отсутствия санкционных рисков».
+      );
     }
-    addDetail('Источник AML-данных',
-      'Сторонний сервис через Worker ScamRadar. Доступность и точность данных зависят от поставщика.');
-    return {available:true,entity};
+
+    addDetail(
+      'Ограничения проверки',
+      «Метки и оценки предоставлены внешним сервисом. Их точность невозможна только по этому ответу.
+    );
+
+    addDetail(
+      «Что делать дальше»,
+      «Если адрес связан с незнакомым человеком или предложением, проверьте информацию независимо. Не отправляйте деньги только на основании этого отчёта».
+    );
+
+    возвращаться {
+      доступно: true,
+      сущность: сущность
+    };
+
   } catch (error) {
-    let message = error.message || 'Сетевая ошибка';
+    пусть сообщение = error.message || 'Ошибка сети';
+
     if (error.name === 'AbortError') {
-      message = 'AML-сервис не ответил за ' + Math.round(AML_TIMEOUT_MS/1000) +
-        ' секунд. Повтори проверку позже.';
-    } else if (message === 'Failed to fetch') {
-      message = 'Не удалось соединиться с AML-сервисом. Возможны проблемы сети, Worker или CORS.';
+      сообщение =
+        'AML-сервис не ответил на' + Math.round(AML_TIMEOUT_MS / 1000) +
+        'секунды. Так бывает с очень активными адресами (биржи, крупные контракты). Повтори проверку позже.';
+    } else if (message === 'Не удалось получить данные') {
+      message = 'Не удалось соединиться с AML-сервисом. Возможные проблемы сети, Worker или CORS.';
     }
-    addDetail('AML-сигналы',
-      'Дополнительная проверка сейчас недоступна. Риск неизвестен. ' + message);
-    return {available:false,noRecord:false,error:message};
-  } finally {
-    $('status').textContent = oldStatus;
+
+    addDetail(
+      'АМЛ-сигналы',
+      «Дополнительная проверка сейчас недоступна. Риск неизвестен. ' + сообщение
+    );
+
+    возвращаться {
+      доступно: false,
+      ошибка: сообщение
+    };
+
+  } окончательно {
+    $('статус').textContent = statusBefore;
   }
 }
 
 function tronUsdtBalance(account) {
   const list = Array.isArray(account.trc20) ? account.trc20 : [];
+
   for (const item of list) {
     if (item && typeof item === 'object' && item[TRON_USDT] !== undefined) {
       const n = Number(item[TRON_USDT]);
-      if (Number.isFinite(n)) return n / 1e6;
+
+      if (Number.isFinite(n)) {
+        вернуть n / 1e6;
+      }
     }
   }
-  return 0;
+
+  вернуть 0;
 }
 
-function resetReport(address) {
+$('check').onclick = async () => {
+  const v = $('target').value.trim();
+
+  если (!v) {
+    $('target').focus();
+    возвращаться;
+  }
+
   $('result').style.display = 'block';
-  $('name').textContent = address;
+  $('name').textContent = v;
   $('status').textContent = 'Проверяем адрес…';
   $('details').replaceChildren();
-  $('similarWarning').replaceChildren();
   $('riskCard').hidden = true;
   $('verdict').style.display = 'none';
   lastVerdict = '';
-  lastReportText = '';
-  currentReport = {
-    address,chain:null,txCount:null,hasHistory:false,
-    onchain:false,aml:null,error:null,activityDate:null
-  };
-  showSimilarWarning(address);
-}
 
-async function runCheck() {
-  const v = $('target').value.trim();
-  if (!v) {
-    $('target').focus();
-    $('status').textContent = 'Введи публичный адрес.';
-    return;
-  }
-  const chain = detectChain(v);
-  resetReport(v);
+  currentReport = {
+    цепочка: null,
+    txCount: null,
+    hasHistory: false,
+    onchain: false,
+    aml: null
+  };
+
   $('check').disabled = true;
   $('check').textContent = 'Проверка…';
 
-  if (!chain) {
-    $('status').textContent = 'Формат адреса не распознан.';
-    addDetail('Поддерживаемые адреса',
-      'Bitcoin (1…, 3…, bc1…), Ethereum (0x + 40 шестнадцатеричных символов) и Tron (T… из 34 символов).');
-    addDetail('USDT',
-      'Баланс USDT проверяется в Ethereum (ERC-20) и Tron (TRC-20), если источник предоставляет данные.');
-    addDetail('Другие сети',
-      'BNB Chain, Polygon, Solana и другие сети пока не проверяются. Не делай вывод о них по этому отчёту.');
-    setVerdict('unknown','Проверка не выполнена',
-      'Сначала проверь формат и сеть адреса. Данные блокчейна и AML-метки не получены.');
-    $('check').disabled = false;
-    $('check').textContent = '⌕ Проверить адрес';
-    $('result').scrollIntoView({behavior:'smooth',block:'start'});
-    return;
+  const isBtc =
+    /^(1[1-9A-HJ-NP-Za-km-z]{25,34}|3[1-9A-HJ-NP-Za-km-z]{25,34}|bc1[a-z0-9]{11,71})$/i.test(v);
+
+  const isEth = /^0x[a-fA-F0-9]{40}$/.test(v);
+
+  const isTron = /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(v);
+
+  если (isBtc || isEth || isTron) {
+    saveHistory(v);
   }
 
-  saveHistory(v);
-
-  try {
-    if (chain === 'BTC') {
+  пытаться {
+    if (isBtc) {
       const data = await getJson(
-        'https://blockstream.info/api/address/' + encodeURIComponent(v),'Blockstream');
+        'https://blockstream.info/api/address/' + encodeURIComponent(v),
+        «Блокстрим»
+      );
+
       const confirmed = data.chain_stats || {};
       const pending = data.mempool_stats || {};
+
       const txCount = Number(confirmed.tx_count || 0);
       const pendingCount = Number(pending.tx_count || 0);
-      const balance = Number(confirmed.funded_txo_sum || 0) -
+
+      постоянный баланс =
+        Number(confirmed.funded_txo_sum || 0) -
         Number(confirmed.spent_txo_sum || 0) +
         Number(pending.funded_txo_sum || 0) -
         Number(pending.spent_txo_sum || 0);
 
-      $('status').textContent = 'Данные Bitcoin получены.';
-      addDetail('Сеть','Bitcoin mainnet');
-      addDetail('Подтверждённые транзакции',txCount.toLocaleString('ru-RU'));
-      addDetail('Транзакции без подтверждения',pendingCount.toLocaleString('ru-RU'));
-      addDetail('Расчётный баланс',formatBtc(balance));
-      addDetail('История адреса',txCount > 0
-        ? 'Есть подтверждённые транзакции.'
-        : 'Источник сообщает 0 подтверждённых транзакций. Это может означать отсутствие истории в этой сети.');
-      addDetail('Что это значит',
-        'Баланс и количество транзакций не показывают, можно ли доверять владельцу.');
-      addDetail('Источник данных','Blockstream Esplora API');
+      $('status').textContent = 'Данные биткойны получены.';
+
+      addDetail('Сеть', 'Основная сеть Биткойна');
+      addDetail('Подтверждённые транзакции', txCount.toLocaleString('ru-RU'));
+      addDetail('Транзакции без подтверждения', pendingCount.toLocaleString('ru-RU'));
+      addDetail('Расчётный баланс', formatBtc(баланс));
+
+      addDetail(
+        ' вес почётный',
+        «Мы получили общедоступную статистику адреса. Число транзакций и баланс сами по себе не показывают, можно ли доверять владельцу».
+      );
+
+      addDetail('Источник данных', 'Blockstream Esplora API');
+
       currentReport = {
-        address:v,chain:'BTC',txCount,hasHistory:txCount > 0,
-        onchain:true,aml:null,error:null,activityDate:null
+        цепочка: 'BTC',
+        txCount: txCount,
+        hasHistory: Number.isFinite(txCount),
+        onchain: true,
+        aml: null
       };
-      currentReport.aml = await checkAml(v,'BTC');
+
+      currentReport.aml = await checkAml(v, 'BTC');
       renderRiskIndex();
 
-    } else if (chain === 'ETH') {
+    } else if (isEth) {
       const data = await getJson(
-        'https://eth.blockscout.com/api/v2/addresses/' + encodeURIComponent(v),'Blockscout');
+        'https://eth.blockscout.com/api/v2/addresses/' + encodeURIComponent(v),
+        «Блокскаут»
+      );
+
+      // Число транзакций: отдельные запросы счётчиков Blockscout.
       let txCount = null;
-      try {
+
+      пытаться {
         const counters = await getJson(
-          'https://eth.blockscout.com/api/v2/addresses/' + encodeURIComponent(v) + '/counters',
-          'Blockscout');
-        if (counters && counters.transactions_count !== undefined && counters.transactions_count !== null) {
+          'https://eth.blockscout.com/api/v2/addresses/' +
+            encodeURIComponent(v) + '/counters',
+          «Блокскаут»
+        );
+
+        если (
+          счетчики &&
+          counters.transactions_count !== undefined &&
+          counters.transactions_count !== null
+        ) {
           const n = Number(counters.transactions_count);
-          if (Number.isFinite(n)) txCount = n;
+
+          if (Number.isFinite(n)) {
+            txCount = n;
+          }
         }
       } catch (e) {}
-      if (txCount === null && data.transactions_count !== undefined && data.transactions_count !== null) {
+
+      если (
+        txCount === null &&
+        data.transactions_count !== undefined &&
+        data.transactions_count !== null
+      ) {
         const n = Number(data.transactions_count);
-        if (Number.isFinite(n)) txCount = n;
+
+        if (Number.isFinite(n)) {
+          txCount = n;
+        }
       }
 
-      let usdtText = 'Источник не предоставил данные.';
-      try {
+      // Балансы USDT (ERC-20): запрос баланса одного токена.
+      let usdtText = 'Не удалось получить данные.';
+
+      пытаться {
         const tb = await getJson(
-          'https://eth.blockscout.com/api?module=account&action=tokenbalance&contractaddress=' +
-          ETH_USDT + '&address=' + encodeURIComponent(v),'Blockscout');
+          'https://eth.blockscout.com/api?module=account&action=tokenbalance' +
+            '&contractaddress=' + ETH_USDT +
+            '&address=' + encodeURIComponent(v),
+          «Блокскаут»
+        );
+
         if (tb && String(tb.status) === '1' && tb.result !== undefined && tb.result !== null) {
           const raw = Number(tb.result);
-          if (Number.isFinite(raw)) usdtText =
-            (raw/1e6).toLocaleString('ru-RU',{maximumFractionDigits:2}) + ' USDT';
+
+          if (Number.isFinite(raw)) {
+            usdtText =
+              (raw / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT';
+          }
         } else if (tb && tb.message) {
-          usdtText = 'Не удалось получить данные (' + String(tb.message).slice(0,80) + ').';
+          usdtText = 'Не удалось получить данные (' + String(tb.message).slice(0, 80) + ').';
         }
-      } catch (e) { usdtText = 'Запрос баланса USDT не удался.'; }
+      } catch (e) {}
 
       $('status').textContent = 'Данные Ethereum получены.';
-      addDetail('Сеть','Ethereum mainnet');
-      addDetail('Адрес',data.hash || v);
-      addDetail('Важно про сеть',
-        'Адреса 0x могут использоваться в Ethereum, BNB Chain, Polygon и других EVM-сетях. Здесь проверен только Ethereum mainnet.');
+
+      addDetail('Сеть', 'Основная сеть Ethereum');
+      addDetail('Адрес', data.hash || v);
+
+      addDetail(
+        'Важно про сеть',
+        'Адреса, начинающиеся с 0x, одинаковы в Ethereum, BNB Chain, Polygon и других сетях. ScamRadar проверен только сетью Ethereum.'
+      );
+
       if (data.is_contract !== undefined && data.is_contract !== null) {
-        addDetail('Тип адреса',isTrueFlag(data.is_contract)
-          ? 'Источник отмечает адрес как смарт-контракт. Это технический признак, а не оценка безопасности.'
-          : 'Источник не отмечает адрес как смарт-контракт. Это не означает, что адрес безопасен.');
-      } else {
-        addDetail('Тип адреса','Источник не предоставил данные о типе адреса.');
+        const contractFlag = data.is_contract;
+        const isContract = isTrueFlag(contractFlag);
+
+        addDetail(
+          'Тип адреса',
+          isContract
+            ? 'Blockscout запомнит адрес как смарт-контракт. Это техническая характеристика, а не оценка безопасности».
+            : 'Blockscout не отмечает адрес как смарт-контракт. Это не означает, что адрес безопасен.
+        );
+      } еще {
+        addDetail(
+          'Тип адреса',
+          «Источник не использует достаточно данных, чтобы определить, является ли адрес смарт-контрактом».
+        );
       }
-      addDetail('Число транзакций',txCount === null
-        ? 'Источник не предоставил данные.'
-        : txCount.toLocaleString('ru-RU'));
+
+      if (txCount !== null) {
+        addDetail('Число транзакций', txCount.toLocaleString('ru-RU'));
+      } еще {
+        addDetail('Число транзакций', 'Источник не данных данных.');
+      }
+
       if (data.coin_balance !== undefined && data.coin_balance !== null) {
-        const eth = Number(data.coin_balance)/1e18;
-        addDetail('Баланс ETH',Number.isFinite(eth)
-          ? eth.toLocaleString('ru-RU',{maximumFractionDigits:8}) + ' ETH'
-          : 'Не удалось отобразить баланс.');
-      } else addDetail('Баланс ETH','Источник не предоставил данные.');
-      addDetail('Баланс USDT (ERC-20)',usdtText);
-      addDetail('История адреса',txCount === 0
-        ? 'Источник сообщает 0 транзакций.'
-        : txCount > 0 ? 'Есть транзакции в истории.' : 'Наличие истории не удалось определить.');
-      addDetail('Источник данных','Blockscout Ethereum API');
+        const eth = Number(data.coin_balance) / 1e18;
+
+        addDetail(
+          'Баланс ETH',
+          Number.isFinite(eth)
+            ? eth.toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' ETH'
+            : «Баланс получен, но его не удалось отобразить».
+        );
+      } еще {
+        addDetail('Баланс ETH', 'Источник не данных данных.');
+      }
+
+      addDetail('Баланс USDT (ERC-20)', usdtText);
+
+      addDetail(
+        ' вес почётный',
+        «Мы получили публичные данные Ethereum. Балансы и число транзакций сами по себе не отображаются, можно ли доверять владельцу».
+      );
+
+      addDetail('Источник данных', 'Blockscout Ethereum API');
+
       currentReport = {
-        address:v,chain:'ETH',txCount,hasHistory:txCount !== null && txCount > 0,
-        onchain:true,aml:null,error:null,activityDate:null
+        chain: 'ETH',
+        txCount: txCount,
+        hasHistory: txCount !== null,
+        onchain: true,
+        aml: null
       };
-      currentReport.aml = await checkAml(v,'ETH');
+
+      currentReport.aml = await checkAml(v, 'ETH');
       renderRiskIndex();
 
-    } else if (chain === 'TRON') {
+    } else if (isTron) {
       const resp = await getJson(
-        'https://api.trongrid.io/v1/accounts/' + encodeURIComponent(v),'TronGrid');
-      const account = resp && Array.isArray(resp.data) && resp.data.length ? resp.data[0] : null;
-      $('status').textContent = 'Данные Tron получены.';
-      addDetail('Сеть','Tron mainnet');
-      addDetail('Адрес',v);
+        'https://api.trongrid.io/v1/accounts/' + encodeURIComponent(v),
+        'ТронГрид'
+      );
+
+      const account = resp && Array.isArray(resp.data) && resp.data.length
+        ? resp.data[0]
+        : нулевой;
+
+      $('status').textContent = 'Данные Трон получены.';
+
+      addDetail('Сеть', 'Основная сеть Tron');
+      addDetail('Адрес', v);
+
       let hasHistory = false;
 
-      if (!account) {
-        addDetail('Состояние адреса',
-          'TronGrid не вернул запись об аккаунте. Возможно, адрес ещё не активирован или источник не располагает данными. Это не подтверждает безопасность.');
-        addDetail('Баланс TRX','Нет записи об аккаунте; фактический баланс не подтверждён.');
-        addDetail('Баланс USDT (TRC-20)','Нет записи об аккаунте; баланс токена не подтверждён.');
-      } else {
+      если (!account) {
+        addDetail(
+          'Состояние адреса',
+          'TronGrid не вернул записи по этому адресу. Обычно так бывает с адресом, который ещё не активирован в сети. На таком адресе нет истории, на которой можно опереться».
+        );
+        addDetail('Баланс TRX', '0 TRX');
+        addDetail('Баланс USDT (TRC-20)', '0 USDT');
+      } еще {
         const created = account.create_time;
-        const lastOp = account.latest_opration_time || account.latest_operation_time;
+        const lastOp = account.latest_operation_time || account.latest_operation_time;
+
         const createdText = formatDate(created);
         const lastText = formatDate(lastOp);
+
         if (createdText) {
-          addDetail('Дата создания аккаунта',createdText + formatAge(created));
+          addDetail('Адрес создан', createText + formatAge(created));
           hasHistory = true;
-        } else addDetail('Дата создания аккаунта','Источник не предоставил дату.');
-        if (lastText) addDetail('Последняя операция',lastText);
-        const trx = Number(account.balance || 0)/1e6;
-        addDetail('Баланс TRX',trx.toLocaleString('ru-RU',{maximumFractionDigits:6}) + ' TRX');
+        } еще {
+          addDetail('Адрес создан', 'Источник не внимания.');
+        }
+
+        if (lastText) {
+          addDetail('Последняя операция', LastText);
+        }
+
+        const trx = Number(account.balance || 0) / 1e6;
+
+        addDetail(
+          «Баланс TRX»,
+          trx.toLocaleString('ru-RU', { maximumFractionDigits: 6 }) + ' TRX'
+        );
+
         const usdt = tronUsdtBalance(account);
-        addDetail('Баланс USDT (TRC-20)',
-          usdt.toLocaleString('ru-RU',{maximumFractionDigits:2}) + ' USDT');
+
+        addDetail(
+          «Баланс USDT (TRC-20)»,
+          usdt.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) + ' USDT'
+        );
       }
-      addDetail('Что это значит',
-        'Баланс и даты активности сами по себе не показывают, можно ли доверять владельцу.');
-      addDetail('Источник данных','TronGrid API');
+
+      addDetail(
+        ' вес почётный',
+        «Мы получили публичные данные сети Tron. Балансы и дата активности сами по себе не отображаются, можно ли доверять владельцу.
+      );
+
+      addDetail('Источник данных', 'TronGrid API');
+
       currentReport = {
-        address:v,chain:'TRON',txCount:null,hasHistory,
-        onchain:true,aml:null,error:null,activityDate:null
+        цепочка: 'TRON',
+        txCount: null,
+        hasHistory: hasHistory,
+        onchain: true,
+        aml: null
       };
-      currentReport.aml = await checkAml(v,'TRON');
+
+      currentReport.aml = await checkAml(v, 'TRON');
       renderRiskIndex();
+
+    } еще {
+      $('status').textContent = 'Не удалось распознать формат адреса.';
+
+      addDetail(
+        'Поддерживаемые адреса',
+        'Биткойн (1…, 3…, bc1…), Ethereum (0x + 40 шестнадцатеричных символов) и Tron (T… из 34 символов). USDT появился в сетях Tron (TRC-20) и Ethereum (ERC-20).'
+      );
+
+      addDetail(
+        'энергияОфициально',
+        «Проверьте, что адрес скопирован полностью и без пробелов».
+      );
+
+      addDetail(
+        «Другие сети»,
+        «Солана, сеть BNB и другие сети пока не применяются».
+      );
     }
+
   } catch (error) {
-    const message = error.message || 'Сетевая ошибка';
-    $('status').textContent = 'Не удалось получить данные блокчейна.';
-    currentReport.error = message;
-    currentReport.onchain = false;
-    currentReport.aml = null;
-    addDetail('Причина',message);
-    addDetail('Что попробовать',
-      'Проверь подключение к интернету и повтори проверку. Если ошибка повторяется, источник данных может быть временно недоступен.');
-    $('riskCard').hidden = true;
-    setVerdict('unknown','Проверка блокчейна не завершена',
-      'Не удалось получить основные данные адреса. AML-оценка не выполнена. Риск неизвестен — не считай это безопасным результатом.');
-  } finally {
+    $('status').textContent = 'Не удалось получить данные внутреннего помещения.';
+
+    addDetail('Причина', error.message || 'Сетевая ошибка');
+
+    addDetail(
+      'Что попробовать',
+      'Проверь интернет и повторение. Если ошибка повторится, API-сервис может быть временно недоступен».
+    );
+
+  } окончательно {
     $('check').disabled = false;
-    $('check').textContent = '⌕ Проверить адрес';
-    $('result').scrollIntoView({behavior:'smooth',block:'start'});
-  }
-}
+    $('check').textContent = '⌕ Посмотреть адрес';
 
-$('check').addEventListener('click',runCheck);
-$('target').addEventListener('keydown',e => { if (e.key === 'Enter') runCheck(); });
-
-$('paste').onclick = async () => {
-  try {
-    const value = await navigator.clipboard.readText();
-    if (!value) {
-      $('status').textContent = 'Буфер обмена пуст.';
-      return;
-    }
-    $('target').value = value.trim();
-    $('target').focus();
-  } catch (e) {
-    const value = prompt('Вставь публичный криптоадрес в это поле:');
-    if (value !== null) $('target').value = value.trim();
+    $('result').scrollIntoView({
+      поведение: 'гладкое',
+      блок: 'старт'
+    });
   }
 };
-
-$('clearInput').onclick = () => {
-  $('target').value = '';
-  $('target').focus();
-};
-
-$('compare').onclick = () => {
-  const a = $('compareA').value.trim();
-  const b = $('compareB').value.trim();
-  const out = $('compareResult');
-  out.replaceChildren();
-  if (!a || !b) {
-    out.textContent = 'Заполни оба поля для сравнения.';
-    return;
-  }
-  const ca = detectChain(a);
-  const cb = detectChain(b);
-  const div = document.createElement('div');
-  div.className = 'warning';
-  if (a === b) {
-    div.className = 'warning good';
-    div.textContent = 'Адреса полностью совпадают посимвольно. Всё равно проверь сеть и источник адреса.';
-  } else {
-    const p = document.createElement('p');
-    p.textContent = 'Адреса отличаются. Не отправляй средства, пока не установишь, какой адрес правильный.';
-    div.append(p);
-    const p2 = document.createElement('p');
-    if (ca && cb && ca !== cb) {
-      p2.textContent = 'Форматы указывают на разные поддерживаемые сети: ' + ca + ' и ' + cb + '.';
-    } else if (ca && cb && ca === cb) {
-      const distance = levenshtein(a.toLowerCase(),b.toLowerCase(),a.length);
-      p2.textContent = 'Оба адреса похожи по формату (' + ca + '). Число отличий: ' +
-        distance + '. Сравни их с оригинальным источником.';
-    } else {
-      p2.textContent = 'Один или оба адреса не распознаны поддерживаемыми форматами.';
-    }
-    div.append(p2);
-    const chars = document.createElement('p');
-    const firstDiff = [];
-    const len = Math.max(a.length,b.length);
-    for (let i=0;i<len;i++) if (a[i] !== b[i]) firstDiff.push(i+1);
-    chars.textContent = firstDiff.length
-      ? 'Позиции различий (счёт с 1): ' + firstDiff.slice(0,40).join(', ') +
-        (firstDiff.length > 40 ? ' и другие.' : '.')
-      : 'Различий в символах не найдено.';
-    div.append(chars);
-  }
-  out.append(div);
-};
-
-function buildReportText() {
-  return 'ScamRadar — предварительный отчёт\n' +
-    'Адрес: ' + ($('name').textContent || 'не указан') + '\n' +
-    'Статус: ' + ($('status').textContent || 'неизвестен') + '\n' +
-    (lastVerdict ? 'Вывод: ' + lastVerdict + '\n' : '') +
-    '\n' + $('details').innerText + '\n\n' +
-    'Важно: индекс ScamRadar отражает найденные сигналы, а не вероятность мошенничества. ' +
-    'Отсутствие меток не гарантирует безопасность.';
-}
 
 $('copy').onclick = async () => {
-  const report = buildReportText();
-  lastReportText = report;
-  try {
+  const report =
+    'ScamRadar — предварительный отчёт\n' +
+    'Адрес:' + $('name').textContent + '\n' +
+    $('статус').textContent + '\n' +
+    (lastVerdict ? 'Вывод: ' + LastVerdict + '\n' : '') +
+    '\n' +
+    $('подробнее').innerText + '\n\n' +
+    «Важно: индекс ScamRadar отражает обнаруженные сигналы, а не допускать мошенничества. Результат не гарантирует безопасность.';
+
+  пытаться {
     await navigator.clipboard.writeText(report);
     $('copy').textContent = 'Скопировано';
-    setTimeout(() => $('copy').textContent = 'Копировать отчёт',1800);
-  } catch (e) {
-    prompt('Скопируй отчёт вручную:',report);
-  }
-};
 
-$('share').onclick = async () => {
-  const report = buildReportText();
-  lastReportText = report;
-  if (navigator.share) {
-    try {
-      await navigator.share({title:'ScamRadar — отчёт проверки',text:report});
-    } catch (e) {
-      if (e && e.name !== 'AbortError') {
-        try { await navigator.clipboard.writeText(report); alert('Не удалось открыть меню отправки. Отчёт скопирован.'); }
-        catch (err) { prompt('Скопируй отчёт вручную:',report); }
-      }
-    }
-  } else {
-    try {
-      await navigator.clipboard.writeText(report);
-      alert('На этом устройстве меню отправки недоступно. Отчёт скопирован.');
-    } catch (e) {
-      prompt('Скопируй отчёт вручную:',report);
-    }
+    setTimeout(() => {
+      $('copy').textContent = 'Копировать отчёт';
+    }, 2000);
+  } catch (e) {
+    $('copy').textContent = 'Копирование недоступно';
   }
 };
 
 $('clear').onclick = () => {
-  history = [];
-  try { localStorage.removeItem('sr-history'); } catch (e) {}
-  draw();
-  $('similarWarning').replaceChildren();
+  история = [];
+
+  пытаться {
+    localStorage.removeItem('sr-history');
+  } catch (e) {}
+
+  рисовать();
 };
 
-draw();
+рисовать();
 
-// Ненавязчивая анимация фона: если canvas недоступен, приложение продолжает работать.
-try {
-  const canvas = $('chainBg');
-  const ctx = canvas.getContext('2d');
-  const reduced = window.matchMedia &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let w=0,h=0,dpr=1,nodes=[];
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1,2);
-    w = window.innerWidth; h = window.innerHeight;
-    canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    const count = Math.max(12,Math.min(28,Math.round(w*h/30000)));
-    nodes = Array.from({length:count},() => ({
-      x:Math.random()*w,y:Math.random()*h,
-      vx:(Math.random()-.5)*12,vy:(Math.random()-.5)*12
-    }));
-    paint();
-  }
-  function paint() {
-    ctx.clearRect(0,0,w,h);
-    for (let i=0;i<nodes.length;i++) {
-      const a=nodes[i];
-      for (let j=i+1;j<nodes.length;j++) {
-        const b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
-        if (d<150) {
-          ctx.strokeStyle='rgba(131,255,176,'+(0.13*(1-d/150))+')';
-          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+// ===== Фоновая анимация: блоки последовательно, соединяющиеся в цепи =====
+пытаться {
+  (функция () {
+    // Яркость фонаря: 0.6 — тише, 1 — как сейчас, 1.5 — ярче.
+    const INTENSITY = 1;
+
+    const canvas = $('chainBg');
+    if (!canvas || !canvas.getContext) return;
+
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = !!(window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    const GREEN = [131, 255, 176];
+    const CYAN = [92, 225, 255];
+    const MAGENTA = [255, 90, 200];
+
+    пусть w = 0;
+    пусть h = 0;
+    пусть dpr = 1;
+    let nodes = [];
+    let links = [];
+    let pulses = [];
+    let lastFrame = 0;
+    let pulseTimer = 1;
+    let linkDist = 150;
+    let resizeTimer = null;
+
+    function rgba(color, alpha) {
+      const a = Math.max(0, Math.min(1, alpha * INTENSITY));
+      return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + a.toFixed(3) + ')';
+    }
+
+    function makeNode() {
+      const r = Math.random();
+      const color = r < 0.78 ? GREEN : (r < 0.94 ? CYAN : MAGENTA);
+      const speed = 4 + Math.random() * 8;
+      const angle = Math.random() * Math.PI * 2;
+
+      возвращаться {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        размер: 7 + Math.random() * 9,
+        цвет: цвет,
+        вспышка: 0
+      };
+    }
+
+    function buildLinks() {
+      ссылки = [];
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+
+          if (d < linkDist) {
+            links.push({ a: i, b: j, d: d });
+          }
         }
       }
-      ctx.fillStyle='rgba(131,255,176,.35)';
-      ctx.fillRect(a.x-3,a.y-3,6,6);
     }
-  }
-  function frame() {
-    if (reduced) return;
-    for (const n of nodes) {
-      n.x+=n.vx/30;n.y+=n.vy/30;
-      if (n.x<0 || n.x>w) n.vx*=-1;
-      if (n.y<0 || n.y>h) n.vy*=-1;
+
+    функция обновления(dt) {
+      for (const n of nodes) {
+        nx += n.vx * dt;
+        ny += n.vy * dt;
+
+        if (nx < -20) { nx = -20; n.vx = Math.abs(n.vx); }
+        if (nx > w + 20) { nx = w + 20; n.vx = -Math.abs(n.vx); }
+        если (ny <-20) {ny = -20; n.vy = Math.abs(n.vy); }
+        если (ny > h + 20) { ny = h + 20; n.vy = -Math.abs(n.vy); }
+
+        n.flash = Math.max(0, n.flash - dt * 1.6);
+      }
+
+      buildLinks();
+
+      pulseTimer -= dt;
+
+      if (pulseTimer <= 0) {
+        if (links.length && pulses.length < 4) {
+          const l = links[Math.floor(Math.random() * links.length)];
+          pulses.push({
+            а: ла,
+            б: фунт,
+            т: 0,
+            скорость: 0.45 + Math.random() * 0.35
+          });
+          PulseTimer = 0,8 + Math.random() * 1,4;
+        } еще {
+          pulseTimer = 0.5;
+        }
+      }
+
+      const spawned = [];
+
+      pulses = pulses.filter(p => {
+        if (!nodes[pa] || !nodes[pb]) return false;
+
+        pt += p.speed * dt;
+
+        если (pt >= 1) {
+          nodes[pb].flash = 1;
+
+          // Блок «подтверждён» — импульс может произойти дальше по цепи.
+          const next = links.filter(l =>
+            (la === pb && lb !== pa) ||
+            (lb === pb && la !== pa)
+          );
+
+          if (next.length && Math.random() < 0.6 && pulses.length + spawned.length < 4) {
+            const l = next[Math.floor(Math.random() * next.length)];
+            const from = pb;
+            const to = la === from ? lb : la;
+
+            spawned.push({
+              а: от,
+              б: к,
+              т: 0,
+              скорость: 0.45 + Math.random() * 0.35
+            });
+          }
+
+          вернуть false;
+        }
+
+        вернуть true;
+      });
+
+      pulses = pulses.concat(spawned);
     }
-    paint();
-    requestAnimationFrame(frame);
-  }
-  window.addEventListener('resize',resize);
-  resize();
-  if (!reduced) requestAnimationFrame(frame);
-} catch (e) {}
+
+    функция render() {
+      ctx.clearRect(0, 0, w, h);
+      ctx.lineWidth = 1;
+
+      for (const l of links) {
+        const a = nodes[la];
+        const b = nodes[lb];
+        const k = 1 - ld / linkDist;
+
+        ctx.strokeStyle = rgba(GREEN, 0.05 + k * 0.14);
+        ctx.beginPath();
+        ctx.moveTo(ax, ay);
+        ctx.lineTo(bx, by);
+        ctx.stroke();
+      }
+
+      for (const n of nodes) {
+        const s = n.size;
+        const half = s / 2;
+        const f = n.flash;
+
+        ctx.fillStyle = rgba(n.color, 0.05 + f * 0.18);
+        ctx.fillRect(nx - half, ny - half, s, s);
+
+        ctx.strokeStyle = rgba(n.color, 0.22 + f * 0.5);
+        ctx.strokeRect(nx - half + 0.5, ny - half + 0.5, s, s);
+
+        ctx.fillStyle = rgba(n.color, 0.25 + f * 0.4);
+        ctx.fillRect(nx - half + 2, ny - 1, s - 4, 1.5);
+      }
+
+      для (константы p импульсов) {
+        const a = nodes[pa];
+        const b = nodes[pb];
+        если (!a || !b) продолжить;
+
+        const x = ax + (bx - ax) * pt;
+        const y = ay + (by - ay) * pt;
+
+        ctx.fillStyle = rgba(CYAN, 0.18);
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+
+        ctx.fillStyle = rgba(GREEN, 0.8);
+        ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+      }
+    }
+
+    функция resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const target = Math.max(14, Math.min(34, Math.round(w * h / 26000)));
+
+      while (nodes.length < target) nodes.push(makeNode());
+      if (nodes.length > target) nodes.length = target;
+
+      for (const n of nodes) {
+        nx = Math.min(nx, w);
+        ny = Math.min(ny, h);
+      }
+
+      linkDist = Math.max(120, Math.min(200, Math.sqrt(w * h) / 5));
+
+      if (reduceMotion) {
+        buildLinks();
+        оказывать();
+      }
+    }
+
+    функция frame(ts) {
+      requestAnimationFrame(frame);
+
+      // Около 30 кадров в секунду, чтобы не тратить батарею.
+      if (ts - lastFrame < 33) return;
+
+      const dt = Math.min(0.1, (ts - lastFrame) / 1000);
+      lastFrame = ts;
+
+      обновить(dt);
+      оказывать();
+    }
+
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(resize, 150);
+    });
+
+    resize();
+
+    if (!reduceMotion) {
+      requestAnimationFrame(frame);
+    }
+  })();
+} catch (e) {
+  // Если анимация не запустилась, приложение продолжает работать без нее.
+}
 </script>
 </body>
 </html>
