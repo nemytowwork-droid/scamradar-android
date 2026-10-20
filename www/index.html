@@ -105,7 +105,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20b</div>
 </main>
 
 <script>
@@ -181,6 +181,47 @@ function isTrueFlag(value) {
     value === 1 ||
     (typeof value === 'string' &&
       ['true', '1', 'yes'].includes(value.trim().toLowerCase()));
+}
+
+// Запрос к публичному API блокчейна: тайм-аут 15 секунд и одна повторная попытка.
+async function getJson(url, serviceName) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let retryable = true;
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      retryable = response.status === 429 || response.status >= 500;
+      lastError = new Error(serviceName + ' вернул HTTP ' + response.status);
+    } catch (e) {
+      if (e && e.name === 'AbortError') {
+        lastError = new Error(serviceName + ' не ответил за 15 секунд.');
+      } else {
+        lastError = new Error(
+          'Не удалось соединиться с ' + serviceName +
+          '. Сервис мог временно отказать из-за большого числа запросов. Повтори проверку через минуту.'
+        );
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (!retryable || attempt === 2) {
+      break;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  }
+
+  throw lastError;
 }
 
 function explainCategory(category) {
@@ -457,11 +498,27 @@ async function checkAml(address, chain) {
 
       try {
         const parsedError = JSON.parse(responseText);
-        errorDetail =
-          parsedError.error ||
-          parsedError.message ||
-          parsedError.detail ||
-          JSON.stringify(parsedError).slice(0, 500);
+        const parts = [];
+
+        if (parsedError.error) parts.push(String(parsedError.error));
+        if (parsedError.detail) parts.push(String(parsedError.detail));
+        if (parsedError.message) parts.push(String(parsedError.message));
+
+        if (parsedError.provider_status) {
+          parts.push('код поставщика ' + parsedError.provider_status);
+        }
+
+        if (parsedError.provider_detail) {
+          parts.push(
+            typeof parsedError.provider_detail === 'string'
+              ? parsedError.provider_detail
+              : JSON.stringify(parsedError.provider_detail).slice(0, 300)
+          );
+        }
+
+        errorDetail = parts.length
+          ? parts.join(' — ')
+          : JSON.stringify(parsedError).slice(0, 500);
       } catch (e) {}
 
       throw new Error('AML HTTP ' + response.status + ': ' + errorDetail);
@@ -579,24 +636,22 @@ $('check').onclick = async () => {
   $('check').disabled = true;
   $('check').textContent = 'Проверка…';
 
-  saveHistory(v);
+  const isBtc =
+    /^(1[1-9A-HJ-NP-Za-km-z]{25,34}|3[1-9A-HJ-NP-Za-km-z]{25,34}|bc1[a-z0-9]{11,71})$/i.test(v);
+
+  const isEth = /^0x[a-fA-F0-9]{40}$/.test(v);
+
+  if (isBtc || isEth) {
+    saveHistory(v);
+  }
 
   try {
-    const isBtc =
-      /^(1[1-9A-HJ-NP-Za-km-z]{25,34}|3[1-9A-HJ-NP-Za-km-z]{25,34}|bc1[a-z0-9]{11,71})$/i.test(v);
-
-    const isEth = /^0x[a-fA-F0-9]{40}$/.test(v);
-
     if (isBtc) {
-      const response = await fetch(
-        'https://blockstream.info/api/address/' + encodeURIComponent(v)
+      const data = await getJson(
+        'https://blockstream.info/api/address/' + encodeURIComponent(v),
+        'Blockstream'
       );
 
-      if (!response.ok) {
-        throw new Error('Bitcoin API вернул HTTP ' + response.status);
-      }
-
-      const data = await response.json();
       const confirmed = data.chain_stats || {};
       const pending = data.mempool_stats || {};
 
@@ -634,15 +689,45 @@ $('check').onclick = async () => {
       renderRiskIndex();
 
     } else if (isEth) {
-      const response = await fetch(
-        'https://eth.blockscout.com/api/v2/addresses/' + encodeURIComponent(v)
+      const data = await getJson(
+        'https://eth.blockscout.com/api/v2/addresses/' + encodeURIComponent(v),
+        'Blockscout'
       );
 
-      if (!response.ok) {
-        throw new Error('Ethereum API вернул HTTP ' + response.status);
-      }
+      // Число транзакций: отдельный запрос счётчиков Blockscout.
+      let txCount = null;
 
-      const data = await response.json();
+      try {
+        const counters = await getJson(
+          'https://eth.blockscout.com/api/v2/addresses/' +
+            encodeURIComponent(v) + '/counters',
+          'Blockscout'
+        );
+
+        if (
+          counters &&
+          counters.transactions_count !== undefined &&
+          counters.transactions_count !== null
+        ) {
+          const n = Number(counters.transactions_count);
+
+          if (Number.isFinite(n)) {
+            txCount = n;
+          }
+        }
+      } catch (e) {}
+
+      if (
+        txCount === null &&
+        data.transactions_count !== undefined &&
+        data.transactions_count !== null
+      ) {
+        const n = Number(data.transactions_count);
+
+        if (Number.isFinite(n)) {
+          txCount = n;
+        }
+      }
 
       $('status').textContent = 'Данные Ethereum получены.';
 
@@ -666,11 +751,8 @@ $('check').onclick = async () => {
         );
       }
 
-      if (data.transactions_count !== undefined && data.transactions_count !== null) {
-        addDetail(
-          'Число транзакций',
-          Number(data.transactions_count).toLocaleString('ru-RU')
-        );
+      if (txCount !== null) {
+        addDetail('Число транзакций', txCount.toLocaleString('ru-RU'));
       } else {
         addDetail('Число транзакций', 'Источник не предоставил данные.');
       }
@@ -697,10 +779,7 @@ $('check').onclick = async () => {
 
       currentReport = {
         chain: 'ETH',
-        txCount: data.transactions_count !== undefined &&
-          data.transactions_count !== null
-          ? Number(data.transactions_count)
-          : null,
+        txCount: txCount,
         onchain: true,
         aml: null
       };
