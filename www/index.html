@@ -33,7 +33,7 @@ button:disabled{opacity:.6;cursor:wait}
 .status{border:1px solid #326348;border-radius:12px;padding:12px;margin:12px 0;color:var(--green);overflow-wrap:anywhere}
 .footer{text-align:center;color:#82988a;font-size:11px;padding:16px}
 .risk-card{border-color:#365d47;background:linear-gradient(145deg,#142b1d,#0b1710)}
-.risk-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.risk-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .risk-number{font-size:42px;line-height:1;font-weight:850;letter-spacing:-1px}
 .risk-track{height:10px;background:#26392d;border-radius:99px;overflow:hidden;margin:14px 0 8px}
 .risk-fill{height:100%;width:0;background:var(--green);border-radius:99px;transition:width .25s}
@@ -56,7 +56,7 @@ button:disabled{opacity:.6;cursor:wait}
 <section class="hero">
   <div class="eyebrow">БЛОКЧЕЙН-ПРОВЕРКА</div>
   <h2>Проверь адрес,<br>прежде чем доверять ему.</h2>
-  <p class="muted">Проверяем публичные данные блокчейна и доступные сигналы риска простым языком.</p>
+  <p class="muted">ScamRadar проверяет публичные данные криптоадреса и ищет доступные признаки риска. Результат поможет внимательнее оценить адрес, но не гарантирует безопасность.</p>
 </section>
 
 <section class="panel">
@@ -64,7 +64,7 @@ button:disabled{opacity:.6;cursor:wait}
   <input id="target" placeholder="Вставь BTC или 0x..." autocomplete="off" spellcheck="false">
   <div><span class="chip">Bitcoin</span><span class="chip">Ethereum</span></div>
   <button class="primary" id="check">⌕ Проверить адрес</button>
-  <p class="notice">Вводи только публичный адрес. Никогда не вводи seed-фразу, пароль или приватный ключ. Адрес передаётся сторонним API-сервисам для проверки.</p>
+  <p class="notice">Вводи только публичный адрес. Не вводи seed-фразу, пароль или приватный ключ. Адрес передаётся сторонним API-сервисам для проверки.</p>
 </section>
 
 <section class="panel result" id="result">
@@ -73,10 +73,10 @@ button:disabled{opacity:.6;cursor:wait}
   <div id="status" class="status"></div>
 
   <div class="panel risk-card" id="riskCard" hidden>
-    <div class="eyebrow">SCAMRADAR SECURITY INDEX</div>
+    <div class="eyebrow">ИНДЕКС РИСКА SCAMRADAR</div>
     <div class="risk-top">
       <div>
-        <div class="muted">Индекс выявленных риск-сигналов</div>
+        <div class="muted">Насколько серьёзны найденные сигналы</div>
         <div class="risk-number" id="riskNumber">—/100</div>
       </div>
       <span class="risk-pill" id="riskLabel">Недостаточно данных</span>
@@ -84,7 +84,7 @@ button:disabled{opacity:.6;cursor:wait}
     <div class="risk-track"><div class="risk-fill" id="riskFill"></div></div>
     <div class="muted" id="confidenceText">Полнота данных: не определена</div>
     <p class="risk-note" id="riskExplanation"></p>
-    <p class="risk-note">Индекс отражает только найденные правилами ScamRadar сигналы. Это не процент вероятности мошенничества. Низкий индекс не гарантирует безопасность, а отсутствие меток не означает отсутствие риска.</p>
+    <p class="risk-note"><strong>Важно:</strong> индекс — это оценка найденных сигналов, а не вероятность мошенничества. Низкий индекс не гарантирует безопасность. Если меток нет, это ещё не значит, что адрес безопасен.</p>
   </div>
 
   <div id="details"></div>
@@ -93,9 +93,9 @@ button:disabled{opacity:.6;cursor:wait}
 
 <section class="panel">
   <h3>Что проверяет ScamRadar</h3>
-  <div class="feature">◈ <strong>Bitcoin</strong><span>Статистика адреса через Blockstream.</span></div>
-  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс, тип адреса и другие доступные данные через Blockscout.</span></div>
-  <div class="feature">◎ <strong>AML-сигналы</strong><span>Дополнительные метки стороннего сервиса, если он их предоставляет.</span></div>
+  <div class="feature">◈ <strong>Bitcoin</strong><span>Баланс и статистика транзакций через Blockstream.</span></div>
+  <div class="feature">⌘ <strong>Ethereum</strong><span>Баланс, число транзакций и тип адреса через Blockscout.</span></div>
+  <div class="feature">◎ <strong>AML-сигналы</strong><span>Метки стороннего сервиса, если он их предоставляет.</span></div>
   <div class="feature">◉ <strong>История</strong><span>Последние восемь проверок сохраняются на устройстве.</span></div>
 </section>
 
@@ -105,7 +105,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка, не гарантия безопасности и не финансовая рекомендация.</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.</div>
 </main>
 
 <script>
@@ -176,17 +176,29 @@ function formatBtc(sats) {
     .toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' BTC';
 }
 
+/* Безопасно читаем флаги из API:
+   true, "true" и 1 считаются включёнными.
+   Строка "false" не считается включённой. */
+function isTrueFlag(value) {
+  return value === true ||
+    value === 1 ||
+    (typeof value === 'string' &&
+      ['true', '1', 'yes'].includes(value.trim().toLowerCase()));
+}
+
 function explainCategory(category) {
-  const key = String(category || '').toLowerCase();
+  const key = String(category || '').trim().toLowerCase();
 
   const explanations = {
-    ransomware: 'Эта метка связана с программами-вымогателями. Она требует дополнительной проверки, но сама по себе не доказывает незаконную деятельность.',
-    burn: 'Эта метка может обозначать адрес сжигания активов. Сама по себе она не означает мошенничество.',
-    cex: 'Эта метка обычно связана с централизованной криптобиржей. Она не доказывает, кому принадлежит адрес и безопасен ли он.',
-    phishing: 'Эта метка связана с возможным фишингом — попытками обманом получить данные или средства.',
-    scam: 'Поставщик связал адрес с категорией возможного мошенничества. Перед выводами необходимо перепроверить источник и контекст.',
-    individual: 'Категория individual обычно означает, что поставщик классифицировал адрес как связанный с физическим лицом. Она сама по себе не подтверждает личность владельца и не говорит о безопасности адреса.',
-    exchange: 'Категория exchange может указывать на связь адреса с биржей. Это не доказывает, кому именно принадлежит адрес и безопасен ли он.'
+    ransomware: 'Эта метка связана с программами-вымогателями. Это серьёзный повод проверить источник и обстоятельства, но одна метка сама по себе не является окончательным доказательством.',
+    'file-locker': 'Эта метка может быть связана с программами, блокирующими доступ к файлам ради выкупа. Необходимо проверить источник метки.',
+    burn: 'Эта метка может обозначать адрес сжигания активов. Она сама по себе не означает мошенничество.',
+    cex: 'Эта категория обычно связана с централизованной криптобиржей. Она не доказывает, кому принадлежит адрес и безопасен ли он.',
+    phishing: 'Эта метка связана с возможным фишингом — попыткой обманом получить данные или средства.',
+    scam: 'Поставщик связал адрес с возможным мошенничеством. Перед выводами важно перепроверить источник и контекст.',
+    fraud: 'Поставщик связал адрес с возможным обманом. Эта информация требует дополнительной проверки.',
+    individual: 'Поставщик классифицировал адрес как связанный с физическим лицом. Это не подтверждает личность владельца и не говорит о безопасности адреса.',
+    exchange: 'Эта категория может указывать на связь адреса с биржей. Она не доказывает, кому именно принадлежит адрес и безопасен ли он.'
   };
 
   return explanations[key] ||
@@ -220,47 +232,47 @@ function calculateRisk(entity) {
     {
       words: ['sanction', 'sanctioned', 'санкц'],
       score: 90,
-      reason: 'Обнаружена метка, связанная с санкциями. Необходимо проверить первоисточник и точное совпадение.'
+      reason: 'Найдена метка, связанная с санкциями. Нужно проверить первоисточник и точность совпадения.'
     },
     {
       words: ['terrorism', 'terrorist', 'терроризм', 'террорист'],
       score: 90,
-      reason: 'Обнаружена метка, связанная с терроризмом. Требуется независимая проверка.'
+      reason: 'Найдена метка, связанная с терроризмом. Требуется независимая проверка.'
     },
     {
       words: ['ransomware', 'file-locker', 'file locker'],
       score: 80,
-      reason: 'Обнаружена метка, связанная с программами-вымогателями.'
+      reason: 'Найдена метка, связанная с программами-вымогателями.'
     },
     {
       words: ['phishing', 'фишинг'],
       score: 80,
-      reason: 'Обнаружена метка, связанная с фишингом.'
+      reason: 'Найдена метка, связанная с фишингом.'
     },
     {
       words: ['scam', 'fraud', 'мошен'],
       score: 75,
-      reason: 'Обнаружена метка, связанная с возможным мошенничеством.'
+      reason: 'Найдена метка, связанная с возможным мошенничеством.'
     },
     {
       words: ['stolen', 'stolen funds', 'theft', 'hack', 'exploit', 'краден', 'краж'],
       score: 70,
-      reason: 'Обнаружена метка, связанная с кражей средств или взломом.'
+      reason: 'Найдена метка, связанная с кражей средств или взломом.'
     },
     {
       words: ['malware', 'вредонос'],
       score: 65,
-      reason: 'Обнаружена метка, связанная с вредоносным программным обеспечением.'
+      reason: 'Найдена метка, связанная с вредоносным программным обеспечением.'
     },
     {
       words: ['darknet', 'dark web'],
       score: 55,
-      reason: 'Обнаружена метка, связанная с darknet. Необходимо проверить контекст.'
+      reason: 'Найдена метка, связанная с darknet. Необходимо проверить контекст.'
     },
     {
       words: ['mixer', 'tumbler', 'mixing service'],
       score: 35,
-      reason: 'Обнаружена метка сервиса смешивания транзакций. Она сама по себе не доказывает незаконную деятельность.'
+      reason: 'Найдена метка сервиса смешивания транзакций. Она сама по себе не доказывает незаконную деятельность.'
     }
   ];
 
@@ -274,7 +286,7 @@ function calculateRisk(entity) {
     }
   }
 
-  if (entity.sanctioned === true) {
+  if (isTrueFlag(entity.sanctioned)) {
     score = Math.max(score, 95);
     reasons.push(
       'AML-сервис указал санкционную отметку. Её необходимо независимо перепроверить.'
@@ -349,7 +361,7 @@ function renderRiskIndex() {
 
   if (!risk || risk.insufficient || risk.score === null) {
     $('riskNumber').textContent = '—/100';
-    $('riskLabel').textContent = 'Нет достаточных сигналов';
+    $('riskLabel').textContent = 'Недостаточно сигналов';
     $('riskFill').style.width = '0%';
     $('riskFill').style.background = 'var(--green)';
 
@@ -361,7 +373,7 @@ function renderRiskIndex() {
 
     addDetail(
       'Индекс риска ScamRadar',
-      'Недостаточно подтверждённых сигналов для числовой оценки. Нельзя считать это нулевым риском.'
+      'Недостаточно подтверждённых сигналов для числовой оценки. Это не нулевой риск.'
     );
 
     addDetail(
@@ -397,7 +409,7 @@ function renderRiskIndex() {
 
   $('riskExplanation').textContent =
     risk.reasons.join(' ') +
-    ' Баланс и количество транзакций сами по себе не повышают индекс. Оценка внешнего AML-сервиса не приравнивается к вероятности мошенничества.';
+    ' Баланс и число транзакций сами по себе не повышают индекс. Оценка внешнего AML-сервиса не является вероятностью мошенничества.';
 
   addDetail(
     'Индекс риска ScamRadar',
@@ -420,7 +432,7 @@ async function checkAml(address, chain) {
 
     try {
       response = await fetch(
-        'https://aged-shadow-c96e.nemytowwork.workers.dev/',
+        'https://aged-shadow-c96e.nemytow.workers.dev/',
         {
           method: 'POST',
           headers: {
@@ -464,7 +476,7 @@ async function checkAml(address, chain) {
       data = JSON.parse(responseText);
     } catch (e) {
       throw new Error(
-        'AML вернул некорректный JSON: ' + responseText.slice(0, 250)
+        'AML вернул некорректный ответ: ' + responseText.slice(0, 250)
       );
     }
 
@@ -489,7 +501,7 @@ async function checkAml(address, chain) {
       entity.aml_score === undefined || entity.aml_score === null
         ? 'Внешняя оценка не предоставлена.'
         : String(entity.aml_score) +
-          ' — значение поставщика, не процент вероятности мошенничества.'
+          ' — оценка поставщика, а не процент вероятности мошенничества.'
     );
 
     if (entity.label) {
@@ -498,26 +510,26 @@ async function checkAml(address, chain) {
 
     if (entity.category) {
       addDetail('Категория сервиса', String(entity.category));
-      addDetail('Что это значит', explainCategory(entity.category));
+      addDetail('Простое объяснение', explainCategory(entity.category));
     }
 
-    if (entity.sanctioned !== undefined) {
+    if (entity.sanctioned !== undefined && entity.sanctioned !== null) {
       addDetail(
         'Санкционная отметка',
-        entity.sanctioned
-          ? 'Сервис указывает такую отметку. Требуется дополнительная проверка.'
+        isTrueFlag(entity.sanctioned)
+          ? 'Сервис указывает такую отметку. Необходимо проверить первоисточник.'
           : 'Сервис не указал такую отметку. Это не гарантирует отсутствие санкционных рисков.'
       );
     }
 
     addDetail(
-      'Ограничения AML-данных',
+      'Ограничения проверки',
       'Метки и оценки предоставлены сторонним сервисом. Их точность нельзя подтвердить только по этому ответу.'
     );
 
     addDetail(
-      'Важно',
-      'Данные не доказывают мошенничество или безопасность адреса. Не отправляй средства только на основании этой проверки.'
+      'Что делать дальше',
+      'Если адрес связан с незнакомым человеком или предложением, проверь информацию независимо. Не отправляй деньги только на основании этого отчёта.'
     );
 
     return {
@@ -531,12 +543,12 @@ async function checkAml(address, chain) {
     if (error.name === 'AbortError') {
       message = 'AML-сервис не ответил за 12 секунд.';
     } else if (message === 'Failed to fetch') {
-      message = 'Не удалось соединиться с AML-сервисом. Возможны проблемы сети, адреса Worker или CORS.';
+      message = 'Не удалось соединиться с AML-сервисом. Возможны проблемы сети, Worker или CORS.';
     }
 
     addDetail(
       'AML-сигналы',
-      'Дополнительная проверка недоступна. Риск неизвестен. ' + message
+      'Дополнительная проверка сейчас недоступна. Риск неизвестен. ' + message
     );
 
     return {
@@ -600,7 +612,7 @@ $('check').onclick = async () => {
         Number(pending.funded_txo_sum || 0) -
         Number(pending.spent_txo_sum || 0);
 
-      $('status').textContent = 'Получены данные из Bitcoin mainnet.';
+      $('status').textContent = 'Данные Bitcoin получены.';
 
       addDetail('Сеть', 'Bitcoin mainnet');
       addDetail('Подтверждённые транзакции', txCount.toLocaleString('ru-RU'));
@@ -608,11 +620,11 @@ $('check').onclick = async () => {
       addDetail('Расчётный баланс', formatBtc(balance));
 
       addDetail(
-        'Простое объяснение',
-        'Мы получили публичную статистику адреса. Само по себе большое или маленькое число транзакций не означает мошенничество.'
+        'Что это значит',
+        'Мы получили публичную статистику адреса. Число транзакций и баланс сами по себе не показывают, можно ли доверять владельцу.'
       );
 
-      addDetail('Источник', 'Blockstream Esplora API');
+      addDetail('Источник данных', 'Blockstream Esplora API');
 
       currentReport = {
         chain: 'BTC',
@@ -635,25 +647,35 @@ $('check').onclick = async () => {
 
       const data = await response.json();
 
-      $('status').textContent = 'Получены данные из Ethereum mainnet.';
+      $('status').textContent = 'Данные Ethereum получены.';
 
       addDetail('Сеть', 'Ethereum mainnet');
       addDetail('Адрес', data.hash || v);
 
-      if (data.is_contract !== undefined) {
+      if (data.is_contract !== undefined && data.is_contract !== null) {
+        const contractFlag = data.is_contract;
+        const isContract = isTrueFlag(contractFlag);
+
         addDetail(
-          'Смарт-контракт',
-          data.is_contract
-            ? 'Да, адрес отмечен как смарт-контракт.'
-            : 'Не отмечен как смарт-контракт.'
+          'Тип адреса',
+          isContract
+            ? 'Blockscout отмечает адрес как смарт-контракт. Это техническая характеристика, а не оценка безопасности.'
+            : 'Blockscout не отмечает адрес как смарт-контракт. Это не означает, что адрес безопасен.'
+        );
+      } else {
+        addDetail(
+          'Тип адреса',
+          'Источник не предоставил достаточно данных, чтобы определить, является ли адрес смарт-контрактом.'
         );
       }
 
-      if (data.transactions_count !== undefined) {
+      if (data.transactions_count !== undefined && data.transactions_count !== null) {
         addDetail(
           'Число транзакций',
           Number(data.transactions_count).toLocaleString('ru-RU')
         );
+      } else {
+        addDetail('Число транзакций', 'Источник не предоставил данные.');
       }
 
       if (data.coin_balance !== undefined && data.coin_balance !== null) {
@@ -665,18 +687,21 @@ $('check').onclick = async () => {
             ? eth.toLocaleString('ru-RU', { maximumFractionDigits: 8 }) + ' ETH'
             : 'Баланс получен, но его не удалось отобразить.'
         );
+      } else {
+        addDetail('Баланс ETH', 'Источник не предоставил данные.');
       }
 
       addDetail(
-        'Простое объяснение',
-        'Мы получили публичные данные Ethereum. Баланс и число транзакций сами по себе не означают, что адрес безопасен или опасен.'
+        'Что это значит',
+        'Мы получили публичные данные Ethereum. Баланс и число транзакций сами по себе не показывают, можно ли доверять владельцу.'
       );
 
-      addDetail('Источник', 'Blockscout Ethereum API');
+      addDetail('Источник данных', 'Blockscout Ethereum API');
 
       currentReport = {
         chain: 'ETH',
-        txCount: data.transactions_count !== undefined
+        txCount: data.transactions_count !== undefined &&
+          data.transactions_count !== null
           ? Number(data.transactions_count)
           : null,
         onchain: true,
@@ -687,7 +712,7 @@ $('check').onclick = async () => {
       renderRiskIndex();
 
     } else {
-      $('status').textContent = 'Формат адреса не распознан.';
+      $('status').textContent = 'Не удалось распознать формат адреса.';
 
       addDetail(
         'Поддерживаемые адреса',
@@ -706,13 +731,13 @@ $('check').onclick = async () => {
     }
 
   } catch (error) {
-    $('status').textContent = 'Не удалось получить данные из блокчейн-API.';
+    $('status').textContent = 'Не удалось получить данные блокчейна.';
 
     addDetail('Причина', error.message || 'Сетевая ошибка');
 
     addDetail(
       'Что попробовать',
-      'Проверь интернет и повтори попытку. Если проблема повторяется, API-сервис может быть временно недоступен.'
+      'Проверь интернет и повтори попытку. Если ошибка повторяется, API-сервис может быть временно недоступен.'
     );
 
   } finally {
@@ -730,15 +755,19 @@ $('copy').onclick = async () => {
   const report =
     'ScamRadar — предварительный отчёт\n' +
     'Адрес: ' + $('name').textContent + '\n' +
-    $('status').textContent + '\n' +
-    $('details').innerText + '\n' +
-    'Индекс риска не является вероятностью мошенничества. Результат не гарантирует безопасность.';
+    $('status').textContent + '\n\n' +
+    $('details').innerText + '\n\n' +
+    'Важно: индекс ScamRadar отражает найденные сигналы, а не вероятность мошенничества. Результат не гарантирует безопасность.';
 
   try {
     await navigator.clipboard.writeText(report);
     $('copy').textContent = 'Скопировано';
+
+    setTimeout(() => {
+      $('copy').textContent = 'Копировать отчёт';
+    }, 2000);
   } catch (e) {
-    $('copy').textContent = 'Копирование недоступно в этом браузере';
+    $('copy').textContent = 'Копирование недоступно';
   }
 };
 
