@@ -102,7 +102,8 @@ button:disabled{opacity:.6;cursor:wait}
       <span class="risk-pill" id="riskLabel">Недостаточно данных</span>
     </div>
     <div class="risk-track"><div class="risk-fill" id="riskFill"></div></div>
-    <div class="muted" id="confidenceText">Полнота данных: не определена</div>
+    <div class="muted" id="confidenceText">Техническая полнота данных: не определена</div>
+    <p class="risk-note">Техническая полнота показывает, какие поля удалось получить от источников. Она не измеряет точность AML-проверки и не является вероятностью мошенничества.</p>
     <p class="risk-note" id="riskExplanation"></p>
     <p class="risk-note"><strong>Важно:</strong> индекс — это оценка найденных сигналов, а не вероятность мошенничества. Низкий индекс не гарантирует безопасность. Если меток нет, это ещё не значит, что адрес безопасен.</p>
   </div>
@@ -126,7 +127,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-21a</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-21b</div>
 </main>
 
 <script>
@@ -448,6 +449,7 @@ function showVerdict(entity, risk) {
   } else if (risk.score >= 50) {
     setVerdict('high','Повышенный сигнал риска','Будь особенно осторожен и перепроверь получателя перед переводом. ' + tail);
   } else if (risk.score >= 20) {
+
     setVerdict('mid','Есть сигналы риска','Внимательно проверь адрес и контекст перед переводом. ' + tail);
   } else {
     setVerdict('low','Низкий уровень обнаруженных сигналов','В проверенных метках найдено мало сигналов риска. Это не гарантия безопасности: перепроверь адрес и получателя. ' + tail);
@@ -469,7 +471,7 @@ function renderRiskIndex() {
 
   if (currentReport.hasHistory) {
     confidence += 15;
-    qualityParts.push('история адреса доступна');
+    qualityParts.push('статистика активности адреса доступна');
   }
 
   if (entity) {
@@ -485,13 +487,13 @@ function renderRiskIndex() {
   confidence = Math.min(100, confidence);
 
   const confidenceLabel = confidence >= 80
-    ? 'Высокая полнота'
+    ? 'Много технических данных'
     : confidence >= 55
-      ? 'Средняя полнота'
-      : 'Низкая полнота';
+      ? 'Часть технических данных'
+      : 'Мало технических данных';
 
   $('confidenceText').textContent =
-    'Полнота данных: ' + confidenceLabel +
+    'Техническая полнота данных: ' + confidenceLabel +
     ' (' + confidence + '/100). ' +
     (qualityParts.length
       ? qualityParts.join('; ') + '.'
@@ -520,8 +522,9 @@ function renderRiskIndex() {
     );
 
     addDetail(
-      'Полнота данных',
+      'Техническая полнота данных',
       confidence + '/100 — ' + confidenceLabel + '. ' +
+      'Показатель отражает наличие технических данных и ответа сервиса, а не точность AML-оценки и не вероятность мошенничества. ' +
       (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
     );
 
@@ -560,8 +563,9 @@ function renderRiskIndex() {
   );
 
   addDetail(
-    'Полнота данных',
+    'Техническая полнота данных',
     confidence + '/100 — ' + confidenceLabel + '. ' +
+    'Показатель отражает наличие технических данных и ответа сервиса, а не точность AML-оценки и не вероятность мошенничества. ' +
     (qualityParts.join('; ') || 'Недостаточно проверенных источников') + '.'
   );
 }
@@ -1122,9 +1126,20 @@ try {
     const GREEN = [131, 255, 176];
     const CYAN = [92, 225, 255];
     const MAGENTA = [255, 90, 200];
-    const MOODS = { neutral: [132,155,141], low: [95,255,151], mid: [255,209,102], high: [255,143,75], critical: [255,75,95] };
+    const MOODS = {
+      neutral: [132,155,141],
+      low: [95,255,151],
+      mid: [255,209,102],
+      high: [255,143,75],
+      critical: [255,75,95]
+    };
+
     let moodColor = MOODS.neutral;
-    window.setScamRadarMood = function(level) { moodColor = MOODS[level] || MOODS.neutral; for (const node of nodes) node.color = moodColor; };
+
+    window.setScamRadarMood = function(level) {
+      moodColor = MOODS[level] || MOODS.neutral;
+      for (const node of nodes) node.color = moodColor;
+    };
 
     let w = 0;
     let h = 0;
@@ -1180,10 +1195,25 @@ try {
         n.x += n.vx * dt;
         n.y += n.vy * dt;
 
-        if (n.x < -20) { n.x = -20; n.vx = Math.abs(n.vx); }
-        if (n.x > w + 20) { n.x = w + 20; n.vx = -Math.abs(n.vx); }
-        if (n.y < -20) { n.y = -20; n.vy = Math.abs(n.vy); }
-        if (n.y > h + 20) { n.y = h + 20; n.vy = -Math.abs(n.vy); }
+        if (n.x < -20) {
+          n.x = -20;
+          n.vx = Math.abs(n.vx);
+        }
+
+        if (n.x > w + 20) {
+          n.x = w + 20;
+          n.vx = -Math.abs(n.vx);
+        }
+
+        if (n.y < -20) {
+          n.y = -20;
+          n.vy = Math.abs(n.vy);
+        }
+
+        if (n.y > h + 20) {
+          n.y = h + 20;
+          n.vy = -Math.abs(n.vy);
+        }
 
         n.flash = Math.max(0, n.flash - dt * 1.6);
       }
@@ -1195,12 +1225,14 @@ try {
       if (pulseTimer <= 0) {
         if (links.length && pulses.length < 4) {
           const l = links[Math.floor(Math.random() * links.length)];
+
           pulses.push({
             a: l.a,
             b: l.b,
             t: 0,
             speed: 0.45 + Math.random() * 0.35
           });
+
           pulseTimer = 0.8 + Math.random() * 1.4;
         } else {
           pulseTimer = 0.5;
@@ -1223,7 +1255,8 @@ try {
             (l.b === p.b && l.a !== p.a)
           );
 
-          if (next.length && Math.random() < 0.6 && pulses.length + spawned.length < 4) {
+          if (next.length && Math.random() < 0.6 &&
+              pulses.length + spawned.length < 4) {
             const l = next[Math.floor(Math.random() * next.length)];
             const from = p.b;
             const to = l.a === from ? l.b : l.a;
