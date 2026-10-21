@@ -209,8 +209,7 @@ function formatDate(ms) {
   const n = Number(ms);
   if (!Number.isFinite(n) || n <= 0) return null;
 
-  const d = new
-Date(n);
+  const d = new Date(n);
   if (isNaN(d.getTime())) return null;
 
   return d.toLocaleDateString('ru-RU', {
@@ -314,8 +313,9 @@ function calculateRisk(entity) {
   const category = String(entity.category || '').trim().toLowerCase();
   const label = String(entity.label || '').trim().toLowerCase();
   const combined = category + ' ' + label;
+  const sanctioned = isTrueFlag(entity.sanctioned);
 
-  if (/\bburn\b|burn address|сжиган/.test(combined)) {
+  if (!sanctioned && /\bburn\b|burn address|сжиган/.test(combined)) {
     return {
       score: null,
       kind: 'burn',
@@ -384,7 +384,7 @@ function calculateRisk(entity) {
     }
   }
 
-  if (isTrueFlag(entity.sanctioned)) {
+  if (sanctioned) {
     score = Math.max(score, 95);
     reasons.push(
       'AML-сервис указал санкционную отметку. Её необходимо независимо перепроверить.'
