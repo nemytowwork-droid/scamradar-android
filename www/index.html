@@ -50,6 +50,8 @@ button:disabled{opacity:.6;cursor:wait}
 .verdict.v-high .v-title{color:#ffb37e}
 .verdict.v-mid{border-color:#ffd166;background:rgba(255,209,102,.09)}
 .verdict.v-mid .v-title{color:#ffe08f}
+.verdict.v-low{border-color:#5fff97;background:rgba(95,255,151,.08)}
+.verdict.v-low .v-title{color:#5fff97}
 .verdict.v-unknown{border-color:#6c7f73;background:rgba(164,182,170,.08)}
 .verdict.v-unknown .v-title{color:#d5e2da}
 </style>
@@ -124,7 +126,7 @@ button:disabled{opacity:.6;cursor:wait}
   <button class="secondary" id="clear">Очистить историю</button>
 </section>
 
-<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-20e</div>
+<div class="footer">ScamRadar — предварительная проверка. Это не доказательство мошенничества, не гарантия безопасности и не финансовая рекомендация.<br>Версия 2026-10-21a</div>
 </main>
 
 <script>
@@ -206,7 +208,8 @@ function formatDate(ms) {
   const n = Number(ms);
   if (!Number.isFinite(n) || n <= 0) return null;
 
-  const d = new Date(n);
+  const d = new
+Date(n);
   if (isNaN(d.getTime())) return null;
 
   return d.toLocaleDateString('ru-RU', {
@@ -311,7 +314,7 @@ function calculateRisk(entity) {
   const label = String(entity.label || '').trim().toLowerCase();
   const combined = category + ' ' + label;
 
-  if (category === 'burn' || label === 'burn') {
+  if (/\bburn\b|burn address|сжиган/.test(combined)) {
     return {
       score: null,
       kind: 'burn',
@@ -388,13 +391,10 @@ function calculateRisk(entity) {
   }
 
   if (reasons.length === 0) {
-    return {
-      score: null,
-      reasons: [
-        'В доступных метках не найдено совпадений с правилами риска ScamRadar. Этого недостаточно, чтобы утверждать, что адрес безопасен.'
-      ],
-      insufficient: true
-    };
+    if (label || category) {
+      return { score: null, kind: 'unclassified', reasons: ['AML-сервис вернул метку, но ScamRadar пока не сопоставил её с правилами собственной оценки. Метка сама по себе не доказывает ни безопасность, ни опасность адреса.'], insufficient: true };
+    }
+    return { score: null, kind: 'no-risk-label', reasons: ['Сервис не вернул распознанных меток риска для расчёта индекса. Отсутствие меток не гарантирует безопасность адреса.'], insufficient: true };
   }
 
   return {
@@ -402,6 +402,10 @@ function calculateRisk(entity) {
     reasons,
     insufficient: false
   };
+}
+
+function setChainMood(level) {
+  if (typeof window.setScamRadarMood === 'function') window.setScamRadarMood(level);
 }
 
 function setVerdict(level, title, text) {
@@ -424,62 +428,29 @@ function entityLabelText(entity) {
 
 function showVerdict(entity, risk) {
   if (!entity) {
-    setVerdict(
-      'unknown',
-      'Не удалось проверить метки риска',
-      'Данные блокчейна получены, но AML-сервис сейчас недоступен или не вернул запись. Риск неизвестен, и это не означает, что адрес безопасен. Повтори проверку позже.'
-    );
+    setVerdict('unknown','Недостаточно данных для вывода о риске','Данные блокчейна могли быть получены, но AML-сервис не вернул пригодную запись или сейчас недоступен. Риск неизвестен. Повтори проверку позже и не считай отсутствие данных признаком безопасности.');
     return;
   }
-
   const labelText = entityLabelText(entity);
-
   if (!risk || risk.insufficient || risk.score === null) {
     if (risk && risk.kind === 'burn') {
-      setVerdict(
-        'none',
-        'Похоже на адрес сжигания активов',
-        'Сервис пометил адрес как burn. Сама по себе эта метка не указывает на мошенничество. Это не гарантия безопасности, проверь контекст.'
-      );
+      setVerdict('unknown','Особая метка: адрес сжигания','Сервис пометил адрес как burn (сжигание активов). Это особый тип адреса, а не обычный получатель. Метка сама по себе не доказывает ни мошенничество, ни безопасность.');
+    } else if (risk && risk.kind === 'unclassified') {
+      setVerdict('unknown','Метка есть, но риск не определён','Метка сервиса: ' + labelText + '. ScamRadar пока не умеет надёжно сопоставить эту метку со своей шкалой риска. Не делаем вывод ни о безопасности, ни об опасности — проверь источник и контекст.');
     } else {
-      setVerdict(
-        'none',
-        'Меток риска не найдено',
-        (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
-        'Это не гарантия безопасности. Перед переводом перепроверь получателя другим способом и убедись, что адрес правильный.'
-      );
+      setVerdict('unknown','Недостаточно данных для вывода о риске',(labelText ? 'Метка сервиса: ' + labelText + '. ' : '') + 'Распознанных меток для расчёта индекса нет. Это не означает, что адрес безопасен. Перед переводом независимо проверь получателя и адрес.');
     }
     return;
   }
-
-  const tail =
-    (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') +
-    'Индекс ScamRadar: ' + risk.score + '/100. Метка не является окончательным доказательством, но это повод проверить адрес.';
-
+  const tail = (labelText ? 'Метка сервиса: ' + labelText + '. ' : '') + 'Индекс риска ScamRadar: ' + risk.score + '/100. Это оценка обнаруженных сигналов, а не вероятность мошенничества и не окончательное доказательство.';
   if (risk.score >= 75) {
-    setVerdict(
-      'crit',
-      'Высокий риск: найдены тревожные метки',
-      'Не отправляй средства, пока не проверишь адрес независимо. ' + tail
-    );
+    setVerdict('crit','Высокий сигнал риска','Не отправляй средства, пока не проверишь адрес независимо. ' + tail);
   } else if (risk.score >= 50) {
-    setVerdict(
-      'high',
-      'Повышенный риск: есть серьёзные сигналы',
-      'Будь осторожен и перепроверь получателя перед переводом. ' + tail
-    );
+    setVerdict('high','Повышенный сигнал риска','Будь особенно осторожен и перепроверь получателя перед переводом. ' + tail);
   } else if (risk.score >= 20) {
-    setVerdict(
-      'mid',
-      'Есть сигналы риска',
-      'Стоит внимательнее проверить адрес перед переводом. ' + tail
-    );
+    setVerdict('mid','Есть сигналы риска','Внимательно проверь адрес и контекст перед переводом. ' + tail);
   } else {
-    setVerdict(
-      'low',
-      'Найдены слабые сигналы',
-      tail
-    );
+    setVerdict('low','Низкий уровень обнаруженных сигналов','В проверенных метках найдено мало сигналов риска. Это не гарантия безопасности: перепроверь адрес и получателя. ' + tail);
   }
 }
 
@@ -529,12 +500,13 @@ function renderRiskIndex() {
   const risk = calculateRisk(entity);
 
   showVerdict(entity, risk);
+  setChainMood(!risk || risk.score === null || risk.insufficient ? 'neutral' : risk.score >= 75 ? 'critical' : risk.score >= 50 ? 'high' : risk.score >= 20 ? 'mid' : 'low');
 
   if (!risk || risk.insufficient || risk.score === null) {
     $('riskNumber').textContent = '—/100';
-    $('riskLabel').textContent = 'Недостаточно сигналов';
+    $('riskLabel').textContent = risk && risk.kind === 'burn' ? 'Особая метка' : risk && risk.kind === 'unclassified' ? 'Метка не сопоставлена' : risk && risk.kind === 'no-risk-label' ? 'Нет распознанных меток' : 'Недостаточно данных';
     $('riskFill').style.width = '0%';
-    $('riskFill').style.background = 'var(--green)';
+    $('riskFill').style.background = '#849b8d';
 
     $('riskExplanation').textContent =
       (risk && risk.reasons
@@ -559,13 +531,13 @@ function renderRiskIndex() {
   let label;
 
   if (risk.score >= 75) {
-    label = 'Критический сигнал';
+    label = 'Высокий сигнал риска';
   } else if (risk.score >= 50) {
-    label = 'Сильный сигнал';
+    label = 'Повышенный сигнал риска';
   } else if (risk.score >= 20) {
-    label = 'Умеренный сигнал';
+    label = 'Есть сигналы риска';
   } else {
-    label = 'Слабый сигнал';
+    label = 'Низкий уровень обнаруженных сигналов';
   }
 
   $('riskNumber').textContent = risk.score + '/100';
@@ -609,7 +581,7 @@ async function checkAml(address, chain) {
 
     try {
       response = await fetch(
-        'https://aged-shadow-c96e.nemytowwork.workers.dev/',
+        'https://aged-shadow-c96e.nemytow.workers.dev/',
         {
           method: 'POST',
           headers: {
@@ -783,6 +755,7 @@ $('check').onclick = async () => {
   $('result').style.display = 'block';
   $('name').textContent = v;
   $('status').textContent = 'Проверяем адрес…';
+  setChainMood('neutral');
   $('details').replaceChildren();
   $('riskCard').hidden = true;
   $('verdict').style.display = 'none';
@@ -1149,6 +1122,9 @@ try {
     const GREEN = [131, 255, 176];
     const CYAN = [92, 225, 255];
     const MAGENTA = [255, 90, 200];
+    const MOODS = { neutral: [132,155,141], low: [95,255,151], mid: [255,209,102], high: [255,143,75], critical: [255,75,95] };
+    let moodColor = MOODS.neutral;
+    window.setScamRadarMood = function(level) { moodColor = MOODS[level] || MOODS.neutral; for (const node of nodes) node.color = moodColor; };
 
     let w = 0;
     let h = 0;
@@ -1168,7 +1144,7 @@ try {
 
     function makeNode() {
       const r = Math.random();
-      const color = r < 0.78 ? GREEN : (r < 0.94 ? CYAN : MAGENTA);
+      const color = r < 0.84 ? moodColor : (r < 0.94 ? CYAN : MAGENTA);
       const speed = 4 + Math.random() * 8;
       const angle = Math.random() * Math.PI * 2;
 
@@ -1278,7 +1254,7 @@ try {
         const b = nodes[l.b];
         const k = 1 - l.d / linkDist;
 
-        ctx.strokeStyle = rgba(GREEN, 0.05 + k * 0.14);
+        ctx.strokeStyle = rgba(moodColor, 0.05 + k * 0.14);
         ctx.beginPath();
         ctx.moveTo(a.x, a.y);
         ctx.lineTo(b.x, b.y);
@@ -1311,7 +1287,7 @@ try {
         ctx.fillStyle = rgba(CYAN, 0.18);
         ctx.fillRect(x - 4, y - 4, 8, 8);
 
-        ctx.fillStyle = rgba(GREEN, 0.8);
+        ctx.fillStyle = rgba(moodColor, 0.8);
         ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
       }
     }
